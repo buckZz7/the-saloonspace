@@ -197,13 +197,13 @@ async function createGroup(name, about) {
     tags: [],
     created_at: Math.floor(Date.now() / 1000),
   }, state.user.sk);
-  await pool.publish(RELAYS, event);
+  try { await Promise.any(pool.publish(RELAYS, event)); } catch(e) { console.warn('publish partial', e); }
   return event.id;
 }
 
 async function fetchGroups() {
   await initPool();
-  const events = await pool.querySync(RELAYS, [{ kinds: [40], limit: 50 }]);
+  const events = await pool.list(RELAYS, [{ kinds: [40], limit: 50 }]);
   return events.map(e => {
     try {
       const meta = JSON.parse(e.content);
@@ -214,7 +214,7 @@ async function fetchGroups() {
 
 async function fetchMessages(channelId) {
   await initPool();
-  const events = await pool.querySync(RELAYS, [{ kinds: [42], '#e': [channelId], limit: 100 }]);
+  const events = await pool.list(RELAYS, [{ kinds: [42], '#e': [channelId], limit: 100 }]);
   return events.sort((a,b) => a.created_at - b.created_at).map(e => ({
     id: e.id,
     content: e.content,
@@ -232,7 +232,7 @@ async function sendMessage(channelId, text) {
     tags: [['e', channelId, RELAYS[0], 'root']],
     created_at: Math.floor(Date.now() / 1000),
   }, state.user.sk);
-  await pool.publish(RELAYS, event);
+  try { await Promise.any(pool.publish(RELAYS, event)); } catch(e) { console.warn('publish partial', e); }
   state.messages.push({
     id: event.id,
     content: text,
