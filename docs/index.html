@@ -272,12 +272,12 @@ function renderMain(){
           <span class="pname">${escapeHtml(state.user.name||'Anon')}</span>
           <div class="npub">${state.user.npub.slice(0,16)}…</div>
           <div style="margin-top:6px;display:flex;gap:4px;">
-            <button class="create-btn" style="flex:1;" onclick="showProfile=true;render()">Profile</button>
+            <button class="create-btn" style="flex:1;" onclick="openProfile()">Profile</button>
             <button class="create-btn" style="flex:1;" onclick="showKeys()">Keys</button>
           </div>
         </div>
         <div class="sidebar-tabs">
-          <div class="sidebar-tab ${state.sidebarTab==='groups'?'active':''}" onclick="switchTab('groups')">Salons</div>
+          <div class="sidebar-tab ${state.sidebarTab==='groups'?'active':''}" onclick="switchTab('groups')">Saloons</div>
           <div class="sidebar-tab ${state.sidebarTab==='dms'?'active':''}" onclick="switchTab('dms')">DMs</div>
         </div>
         ${state.sidebarTab==='groups'?renderGroupsTab():renderDMsTab()}
@@ -353,7 +353,7 @@ function renderChatArea(){
   }
   return `
     <div style="display:flex;flex-direction:column;height:100%">
-      <div class="chat-header"><div style="display:flex;align-items:center"><button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button><div class="channel-name">Welcome to the Saloon</div></div></div>
+      <div class="chat-header"><div style="display:flex;align-items:center"><button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button><div class="channel-name">Howdy, welcome on in 👋</div></div></div>
       <div style="display:flex;align-items:center;justify-content:center;flex:1;color:var(--text-tertiary);padding:24px">
         <div style="text-align:center;max-width:320px">
           <div style="font-size:3em;margin-bottom:12px">🤠</div>
@@ -410,7 +410,7 @@ function renderProfileModal(){
       </select>
     </div>
     <div class="btns">
-      <button class="cancel" onclick="state.showProfile=false;render()">Cancel</button>
+      <button class="cancel" onclick="closeProfile()">Cancel</button>
       <button class="save" onclick="saveProfile()">Save</button>
     </div>
   </div></div>`;
@@ -485,9 +485,6 @@ function showCreateGroup(){
     const chId=await createChannel(name,'general','General chat',id);
     state.channels[id]=[{id:chId,name:'general',about:'General chat'}];
     selectChannel(id,chId);
-    // Create 'vision' table too
-    const vId=await createChannel(name,'vision','Vision & ideas',id);
-    state.channels[id].push({id:vId,name:'vision',about:'Vision & ideas'});
   });
 }
 
@@ -515,6 +512,9 @@ function showNewDM(){
 
 function showKeys(){state.view='keybackup';render()}
 
+function openProfile(){state.showProfile=true;render()}
+function closeProfile(){state.showProfile=false;render()}
+
 async function saveProfile(){
   const name=document.getElementById('profName')?.value||'';
   const about=document.getElementById('profAbout')?.value||'';
@@ -538,6 +538,7 @@ window.showCreateGroup=showCreateGroup;window.showCreateChannel=showCreateChanne
 window.showNewDM=showNewDM;window.createAccount=createAccount;window.loginExisting=loginExisting;
 window.finishKeyBackup=finishKeyBackup;window.showKeys=showKeys;window.copyNsec=copyNsec;
 window.toggleSidebar=toggleSidebar;window.switchTab=switchTab;window.saveProfile=saveProfile;
+window.openProfile=openProfile;window.closeProfile=closeProfile;
 
 init();
 } // end startApp
