@@ -53,6 +53,7 @@ Vintage, gritty, Western Myspace. Browns and yellows, dusty saloon colors. Its o
 
 ## Open questions
 
+- **Group discovery & spam:** Confirmed in live testing — the public relay firehose of kind-40 channels is full of junk (bots spamming channel-creation events, e.g. a card game bot flooding hundreds of "Mariglia" channels). Showing every public channel is unusable. Discovery needs curation: "your groups" list + join-by-link + search, not a global feed. Needs a sub-napkin.
 - **Nostr bot/agent identification:** How does Nostr currently handle bots? Is there a standard field or convention? Need to research.
 - **Nostr onboarding flows:** What do successful Nostr clients do for onboarding? Study Damus, Amethyst, and others. Goal: user doesn't need to know what Nostr is.
 - **Channel naming:** What are the saloon-themed names for groups and channels? "Tables" for channels? "Saloon" for groups? Need to nail this down without being too corny.
