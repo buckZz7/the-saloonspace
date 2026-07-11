@@ -426,7 +426,7 @@ async function sendMsg() {
 function showCreateGroup() {
   const name = prompt('Group name:');
   if (!name) return;
-  const about = prompt('What's this group about?') || '';
+  const about = prompt("What's this group about?") || '';
   createGroup(name, about).then(id => {
     state.groups.push({ id, name, about, pubkey: state.user.pk });
     selectGroup(id);
