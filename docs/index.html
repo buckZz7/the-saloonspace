@@ -132,7 +132,10 @@ body {
 <div id="app"></div>
 
 <script type="module">
-import { generatePrivateKey, getPublicKey, npubEncode, nsecEncode, nsecDecode, finishEvent, SimplePool } from 'https://esm.sh/nostr-tools@1.17.0';
+import { generatePrivateKey, getPublicKey, finishEvent, SimplePool, nip19 } from 'https://esm.sh/nostr-tools@1.17.0';
+
+const { npubEncode, nsecEncode } = nip19;
+function nsecDecode(nsec) { return nip19.decode(nsec); }
 // --- State ---
 let state = {
   user: null,
