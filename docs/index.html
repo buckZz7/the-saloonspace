@@ -12,16 +12,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Rye&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #1a1410; --bg-card: #2a1f17; --bg-elevated: #3a2a1c; --bg-hover: #4a3525;
-  --text: #f5e6c8; --text-secondary: #c4a87a; --text-tertiary: #8a7355;
-  --border: #4a3525; --border-light: #5a4535;
+  --bg: #151210; --bg-card: #1f1812; --bg-elevated: #2a2018; --bg-hover: #332821;
+  --text: #f0e0c8; --text-secondary: #c4a87a; --text-tertiary: #8a7355;
+  --border: #3a2a1c; --border-light: #4a3525;
   --accent: #d4a017; --accent-bright: #f0c040; --accent-dim: #b8901a;
   --danger: #c0392b; --green: #27ae60;
   --shadow-sm: 0 1px 3px rgba(0,0,0,.3);
-  --shadow-md: 0 4px 16px rgba(0,0,0,.35);
-  --shadow-lg: 0 12px 40px rgba(0,0,0,.45);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.4);
+  --shadow-lg: 0 16px 48px rgba(0,0,0,.6);
   --glow-accent: 0 0 12px rgba(212,160,23,.25);
-  --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px;
+  --radius-sm: 4px; --radius-md: 8px; --radius-lg: 12px;
   --sidebar-w: 260px;
 }
 [data-theme="light"] {
@@ -65,7 +65,7 @@ body{
 }
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative}
 
-.sidebar-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;transition:background .2s ease}
+.sidebar-header{padding:max(16px,env(safe-area-inset-top)) 20px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;transition:background .2s ease}
 .sidebar-header h1{font-family:'Rye',serif;font-size:1.3em;color:var(--accent-bright);flex:1;letter-spacing:.5px}
 .relay-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-left:4px;vertical-align:middle}
 .relay-dot.disconnected{background:var(--danger)}
@@ -130,8 +130,8 @@ body{
 [data-theme="light"] .chat-header{background:color-mix(in srgb,var(--bg-card) 85%,transparent)}
 .chat-header .channel-name{font-weight:600;font-size:1.05em}
 .chat-header .channel-desc{font-size:.8em;color:var(--text-tertiary)}
-.messages{flex:1;overflow-y:auto;padding:16px 20px;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
-.msg{margin-bottom:18px;display:flex;gap:10px;align-items:flex-start;animation:msgIn .3s ease;animation-fill-mode:both}
+.messages{flex:1;overflow-y:auto;padding:16px 20px;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;min-height:0}
+.msg{margin-bottom:20px;display:flex;gap:10px;align-items:flex-start;animation:msgIn .3s ease;animation-fill-mode:both}
 @keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .msg .avatar{width:36px;height:36px;border-radius:50%;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:.85em;font-weight:600;background:var(--bg-elevated);border:1px solid var(--border);margin-top:2px;box-shadow:var(--shadow-sm)}
 .msg .avatar img{width:100%;height:100%;object-fit:cover}
@@ -142,7 +142,7 @@ body{
 .msg .author .agent-tag{font-size:.7em;background:rgba(39,174,96,.15);color:var(--green);padding:1px 6px;border-radius:3px;font-weight:500}
 .msg .time{font-size:.72em;color:var(--text-tertiary);margin-left:auto;font-weight:400}
 .msg .content{color:var(--text);font-size:.92em;line-height:1.5;word-wrap:break-word}
-.msg-input{padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;position:sticky;bottom:0;background:color-mix(in srgb,var(--bg-card) 85%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.msg-input{padding:12px 16px max(12px,env(safe-area-inset-bottom));border-top:1px solid var(--border);display:flex;gap:8px;position:sticky;bottom:0;background:color-mix(in srgb,var(--bg-card) 85%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 [data-theme="light"] .msg-input{background:color-mix(in srgb,var(--bg-card) 85%,transparent)}
 .msg-input input,.msg-input textarea{flex:1;background:var(--bg-elevated);border:1px solid var(--border);color:var(--text);padding:12px 16px;border-radius:var(--radius-md);font-size:.95em;font-family:inherit;transition:border-color .2s ease,box-shadow .2s ease;resize:none;overflow-y:auto;max-height:calc(1.5em*5+24px);min-height:46px;line-height:1.5}
 .msg-input input:focus,.msg-input textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(212,160,23,.12)}
@@ -163,9 +163,22 @@ body{
 .onboard .or{color:var(--text-tertiary);font-size:.85em;margin:16px 0}
 .onboard .secondary{background:transparent;color:var(--text-secondary);border:1px solid var(--border)}
 .onboard .secondary:hover{border-color:var(--accent);color:var(--accent);background:transparent}
+.onboard .toggle-link{display:block;color:var(--text-tertiary);font-size:.85em;cursor:pointer;margin-top:20px;text-decoration:none;transition:color .15s ease}
+.onboard .toggle-link:hover{color:var(--accent)}
+.onboard .existing-account{display:none;margin-top:16px}
+.onboard .existing-account.open{display:block}
 .onboard .key-display{background:var(--bg-elevated);border:1px solid var(--border);padding:12px;border-radius:var(--radius-md);font-family:monospace;font-size:.8em;word-break:break-all;text-align:left;margin:12px 0;box-shadow:inset 0 1px 3px rgba(0,0,0,.1)}
 .onboard .key-display .label{font-family:'Inter',sans-serif;color:var(--text-tertiary);font-size:.85em;margin-bottom:4px}
+.onboard .key-display.secret{border-color:var(--danger);border-width:2px;background:color-mix(in srgb,var(--danger) 8%,var(--bg-elevated))}
+.onboard .key-display.secret .label{color:var(--danger);font-weight:600}
 .onboard .warning{color:var(--danger);font-size:.82em;margin-top:8px}
+.onboard .key-warning{color:var(--danger);font-size:.82em;margin-top:8px;font-weight:500;display:flex;align-items:center;gap:6px}
+.onboard .copy-btn{display:inline-flex;align-items:center;gap:6px;padding:12px 24px;margin-top:8px;background:var(--accent);color:#000;border:none;border-radius:var(--radius-md);font-weight:600;cursor:pointer;font-size:1em;transition:all .15s ease}
+.onboard .copy-btn:hover{background:var(--accent-bright)}
+.onboard .copy-btn:active{transform:scale(.97)}
+.onboard .solid-btn{background:var(--accent);color:#000;border:none;padding:14px 32px;border-radius:var(--radius-md);font-weight:700;cursor:pointer;font-size:1.05em;margin-top:16px;width:100%;transition:all .15s ease}
+.onboard .solid-btn:hover{background:var(--accent-bright)}
+.onboard .solid-btn:active{transform:scale(.97)}
 
 .profile-modal{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:300;display:flex;align-items:center;justify-content:center;animation:modalOverlay .2s ease}
 @keyframes modalOverlay{from{opacity:0}to{opacity:1}}
@@ -190,7 +203,7 @@ body{
 .search-box input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(212,160,23,.12)}
 
 .msg{margin-bottom:18px;display:flex;gap:10px;align-items:flex-start}
-.msg.grouped{margin-bottom:4px}
+.msg.grouped{margin-bottom:4px;margin-top:-4px}
 .msg.grouped .avatar{visibility:hidden}
 .msg.grouped .author{display:none}
 
@@ -966,7 +979,7 @@ function renderGroupsTab(){
         return `
         <div class="group-item ${state.activeGroup===g.id?'active':''}" onclick="selectGroup('${g.id}')">
           <span class="gicon" style="background:${avatarBg(g.id)}">${escapeHtml(g.name.slice(0,2).toUpperCase())}</span>
-          <span class="gname"><span class="saloon-name-link" onclick="event.stopPropagation();openSettings('${g.id}')">${escapeHtml(g.name)}</span>${state.lastMessages[g.id]?`<div style="font-size:.75em;color:var(--text-tertiary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px">${escapeHtml(state.lastMessages[g.id].slice(0,40))}</div>`:''}</span>
+          <span class="gname"><span class="saloon-name-link" onclick="event.stopPropagation();openSettings('${g.id}')">${escapeHtml(g.name)}</span>${state.lastMessages[g.id]?`<div style="font-size:.78em;color:var(--text-secondary);opacity:.7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px">${escapeHtml(state.lastMessages[g.id].slice(0,45))}</div>`:''}</span>
           <span class="expand">${(state.channels[g.id]||[]).length>0?'▾':''}</span>
           ${totalUnread>0?`<span class="unread-dot"></span>`:''}
         </div>
@@ -1152,12 +1165,14 @@ function renderKeyBackup(){
 function renderOnboard(){
   return `<div class="onboard">
     <h1>SaloonSpace</h1>
-    <p>Decentralized group chat for humans and agents. No KYC, no central server. Just walk in.</p>
+    <p>Decentralized chat for humans and agents. Pick a name and you're in — we'll handle the crypto.</p>
     <div class="field"><label>Display name</label><input type="text" id="displayName" placeholder="Howdy, I'm..."></div>
-    <button onclick="createAccount()">Generate new account</button>
-    <div class="or">— already have a Nostr account? —</div>
-    <div class="field"><label>Your secret key</label><input type="password" id="nsecInput" placeholder="nsec1..."></div>
-    <button class="secondary" onclick="loginExisting()">Sign in</button>
+    <button class="solid-btn" onclick="createAccount()">Generate new account</button>
+    <a class="toggle-link" onclick="toggleExistingAccount()">Already have a Nostr account?</a>
+    <div class="existing-account" id="existingAccountSection">
+      <div class="field" style="margin-top:12px"><label>Your secret key (nsec)</label><input type="password" id="nsecInput" placeholder="nsec1..."></div>
+      <button class="secondary" onclick="loginExisting()">Sign in</button>
+    </div>
   </div>`;
 }
 
@@ -1753,6 +1768,7 @@ function highlightSearch(html,query){
 }
 
 // --- Settings page ---
+function toggleExistingAccount(){const el=document.getElementById('existingAccountSection');if(el)el.classList.toggle('open')}
 function openSettingsPage(){
   state.view='settings';
   state.showProfile=false;
@@ -1908,6 +1924,15 @@ async function fetchMessageProfiles(){
 // --- Init ---
 async function init(){
   // Back button closes modals/sidebar before navigating away
+  // Mobile swipe-to-close sidebar
+  let touchStartX=0,touchEndX=0;
+  document.addEventListener('touchstart',e=>{touchStartX=e.changedTouches[0].screenX});
+  document.addEventListener('touchend',e=>{
+    touchEndX=e.changedTouches[0].screenX;
+    if(touchStartX-touchEndX>80&&state.sidebarOpen&&window.innerWidth<768){
+      state.sidebarOpen=false;render();
+    }
+  });
   window.addEventListener('popstate',()=>{
     if(state.showProfile||state.viewingProfile||state.showCreateGroupModal||state.showCreateChannelModal||state.showNewDMModal||state.showSettingsModal){
       state.showProfile=false;state.viewingProfile=null;state.showCreateGroupModal=false;state.showCreateChannelModal=false;state.showNewDMModal=false;state.showSettingsModal=false;state.showMembersPanel=false;state.replyingTo=null;state.replyingToContent=null;if(state.view==='settings')state.view='app';render();
@@ -1989,7 +2014,7 @@ window.openMembersPanel=openMembersPanel;window.closeMembersPanel=closeMembersPa
 // Channel search
 window.toggleChannelSearch=toggleChannelSearch;window.onChannelSearchInput=onChannelSearchInput;window.clearChannelSearch=clearChannelSearch;
 // Settings page
-window.openSettingsPage=openSettingsPage;window.closeSettingsPage=closeSettingsPage;window.saveSettingsPage=saveSettingsPage;
+window.openSettingsPage=openSettingsPage;window.closeSettingsPage=closeSettingsPage;window.saveSettingsPage=saveSettingsPage;window.toggleExistingAccount=toggleExistingAccount;
 // Channel mute
 window.toggleMuteChannel=toggleMuteChannel;
 
