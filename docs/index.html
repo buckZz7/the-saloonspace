@@ -427,6 +427,34 @@ body{
 .settings-page .btn-logout:hover{background:var(--danger);color:#fff}
 .settings-page .btn-close{background:transparent;color:var(--text-secondary);border:1px solid var(--border)}
 .settings-page .btn-close:hover{border-color:var(--text-secondary)}
+.settings-nav-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;cursor:pointer;border-top:1px solid var(--border);margin-top:12px;transition:color .15s ease}
+.settings-nav-row:hover{color:var(--accent)}
+.settings-nav-row span:first-child{font-size:.92em}
+
+/* Relay management page */
+.relays-page{max-width:560px;margin:0 auto;padding:0;height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+.relays-header{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0}
+.relays-header h1{font-family:'Rye',serif;font-size:1.4em;color:var(--accent-bright);letter-spacing:.5px}
+.relays-back-btn{display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--text-secondary);cursor:pointer;padding:6px;border-radius:var(--radius-sm);transition:background .15s ease,color .15s ease}
+.relays-back-btn:hover{background:var(--bg-hover);color:var(--accent)}
+.relays-content{flex:1;overflow-y:auto;padding:16px 20px}
+.relays-section-title{font-size:.85em;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:10px}
+.relay-list{display:flex;flex-direction:column;gap:8px}
+.relay-row{display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);transition:border-color .15s ease}
+.relay-row:hover{border-color:var(--border-light)}
+.relay-favicon{width:24px;height:24px;border-radius:4px;flex-shrink:0;object-fit:contain}
+.relay-favicon-fallback{width:24px;height:24px;border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.7em;font-weight:600;color:var(--text-secondary);border:1px solid var(--border)}
+.relay-pill{font-size:.72em;font-weight:600;padding:3px 8px;border-radius:var(--radius-sm);white-space:nowrap;flex-shrink:0}
+.relay-pill-online{background:rgba(39,174,96,.15);color:var(--green);border:1px solid rgba(39,174,96,.3)}
+.relay-pill-error{background:rgba(192,57,43,.15);color:var(--danger);border:1px solid rgba(192,57,43,.3)}
+.relay-pill-checking{background:var(--bg-elevated);color:var(--text-tertiary);border:1px solid var(--border)}
+.relay-trash-btn{display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--text-tertiary);cursor:pointer;padding:6px;border-radius:var(--radius-sm);transition:background .15s ease,color .15s ease;flex-shrink:0}
+.relay-trash-btn:hover{background:rgba(192,57,43,.12);color:var(--danger)}
+.relay-add-btn{display:flex;align-items:center;gap:4px;background:var(--bg-elevated);border:1px solid var(--border);color:var(--accent);padding:6px 12px;border-radius:var(--radius-sm);cursor:pointer;font-size:.8em;font-weight:600;white-space:nowrap;flex-shrink:0;transition:all .15s ease}
+.relay-add-btn:hover{background:var(--accent);color:#000;border-color:var(--accent)}
+.relay-add-input-row{display:flex;gap:8px;margin-top:12px}
+.relay-add-input{flex:1;background:var(--bg-elevated);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:var(--radius-sm);font-family:monospace;font-size:.88em}
+.relay-add-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(212,160,23,.12)}
 
 @media(max-width:768px){
   .members-panel{width:100%}
@@ -591,9 +619,27 @@ let state = {
   lastMessageTimes: {}, // groupId -> timestamp (ms) of last message
   groupsLoading: false,
 };
-const RELAYS = ['wss://relay.damus.io', 'wss://nos.lol', 'wss://relay.nostr.band'];
+const DEFAULT_RELAYS = ['wss://relay.damus.io', 'wss://nos.lol', 'wss://relay.nostr.band'];
+const RECOMMENDED_RELAYS = ['wss://relay.damus.io', 'wss://nos.lol', 'wss://relay.nostr.band', 'wss://relay.primal.net', 'wss://nostr.land'];
+function getRelays(){
+  try{
+    const s=localStorage.getItem('saloon-relays');
+    if(s){const arr=JSON.parse(s);if(Array.isArray(arr)&&arr.length>0)return arr}
+  }catch(e){}
+  localStorage.setItem('saloon-relays',JSON.stringify(DEFAULT_RELAYS));
+  return DEFAULT_RELAYS.slice();
+}
+function setRelays(arr){
+  localStorage.setItem('saloon-relays',JSON.stringify(arr));
+  // Recreate pool so it picks up the new relay list
+  if(pool){try{pool.close&&(typeof pool.close==='function')&&pool.close()}catch(e){}}
+  pool=null;
+  relayStatus='disconnected';
+  initPool();
+}
 let pool = null; let sub = null;
 let relayStatus = 'disconnected'; // disconnected, connecting, connected
+window.relayStatusMap = {}; // url -> 'checking' | 'online' | 'error'
 
 async function initPool(){
   if(!pool){
@@ -601,7 +647,7 @@ async function initPool(){
     if(typeof render!=='undefined')render();
     pool=new SimplePool();
     try{
-      const test=await pool.list(RELAYS,[{kinds:[1],limit:1}]);
+      const test=await pool.list(getRelays(),[{kinds:[1],limit:1}]);
       relayStatus='connected';
     }catch(e){
       relayStatus='connected';
@@ -611,7 +657,7 @@ async function initPool(){
     setInterval(async()=>{
       if(!pool)return;
       try{
-        await pool.list(RELAYS,[{kinds:[1],limit:1}]);
+        await pool.list(getRelays(),[{kinds:[1],limit:1}]);
         if(relayStatus!=='connected'){relayStatus='connected';render()}
       }catch(e){
         if(relayStatus!=='disconnected'){relayStatus='disconnected';render()}
@@ -625,19 +671,19 @@ function applyTheme(){document.documentElement.setAttribute('data-theme',state.t
 function toggleTheme(){state.theme=state.theme==='dark'?'light':'dark';localStorage.setItem('saloon-theme',state.theme);applyTheme();render()}
 
 // --- Nostr ---
-async function initPool(){if(!pool)pool=new SimplePool()}
+async function initPoolStub(){if(!pool)pool=new SimplePool()}
 async function generateKey(){const sk=generatePrivateKey();const pk=getPublicKey(sk);return{sk,pk,npub:npubEncode(pk),nsec:nsecEncode(sk)}}
 async function loginWithKey(nsec){try{const d=nsecDecode(nsec);const pk=getPublicKey(d.data);return{sk:d.data,pk,npub:npubEncode(pk)}}catch(e){try{const pk=getPublicKey(nsec);return{sk:nsec,pk,npub:npubEncode(pk)}}catch(e2){return null}}}
 
 async function publishProfile(name,about,picture,link,isAgent){
   await initPool();
   const event=finishEvent({kind:0,content:JSON.stringify({name,about,picture:picture||'',link:link||'',isAgent:isAgent||false,nip05:''}),tags:[],created_at:Math.floor(Date.now()/1000)},state.user.sk);
-  try{await Promise.any(pool.publish(RELAYS,event))}catch(e){console.warn('publish',e)}
+  try{await Promise.any(pool.publish(getRelays(),event))}catch(e){console.warn('publish',e)}
 }
 
 async function fetchProfile(pubkey){
   await initPool();
-  const events=await pool.list(RELAYS,[{kinds:[0],authors:[pubkey],limit:1}]);
+  const events=await pool.list(getRelays(),[{kinds:[0],authors:[pubkey],limit:1}]);
   if(events.length>0){try{return JSON.parse(events[0].content)}catch{return{}}}
   return{};
 }
@@ -645,28 +691,28 @@ async function fetchProfile(pubkey){
 // Group = kind 40 with 'saloon' tag. Channel = kind 40 with parent group e tag.
 async function createGroup(name,about){
   await initPool();
-  const event=finishEvent({kind:40,content:JSON.stringify({name,about,picture:'',relays:RELAYS}),tags:[['t','saloon']],created_at:Math.floor(Date.now()/1000)},state.user.sk);
-  try{await Promise.any(pool.publish(RELAYS,event))}catch(e){console.warn('publish',e)}
+  const event=finishEvent({kind:40,content:JSON.stringify({name,about,picture:'',relays:getRelays()}),tags:[['t','saloon']],created_at:Math.floor(Date.now()/1000)},state.user.sk);
+  try{await Promise.any(pool.publish(getRelays(),event))}catch(e){console.warn('publish',e)}
   return event.id;
 }
 
 async function createChannel(groupName,channelName,about,groupId){
   await initPool();
-  const event=finishEvent({kind:40,content:JSON.stringify({name:channelName,about:about||'',picture:'',relays:RELAYS}),tags:[['e',groupId,RELAYS[0],'root'],['t','saloon-channel']],created_at:Math.floor(Date.now()/1000)},state.user.sk);
-  try{await Promise.any(pool.publish(RELAYS,event))}catch(e){console.warn('publish',e)}
+  const event=finishEvent({kind:40,content:JSON.stringify({name:channelName,about:about||'',picture:'',relays:getRelays()}),tags:[['e',groupId,getRelays()[0],'root'],['t','saloon-channel']],created_at:Math.floor(Date.now()/1000)},state.user.sk);
+  try{await Promise.any(pool.publish(getRelays(),event))}catch(e){console.warn('publish',e)}
   return event.id;
 }
 
 async function fetchMyGroups(){
   await initPool();
   // Get groups created by user + groups from localStorage
-  const events=await pool.list(RELAYS,[{kinds:[40],authors:[state.user.pk],limit:50}]);
+  const events=await pool.list(getRelays(),[{kinds:[40],authors:[state.user.pk],limit:50}]);
   let groups=events.map(e=>{try{const m=JSON.parse(e.content);return{id:e.id,name:m.name||'Unnamed',about:m.about||'',pubkey:e.pubkey,channels:[]}}catch{return null}}).filter(Boolean);
   // Merge with localStorage joined groups
   const joined=JSON.parse(localStorage.getItem('saloon-joined')||'[]');
   for(const jid of joined){
     if(groups.find(g=>g.id===jid))continue;
-    const ev=await pool.list(RELAYS,[{ids:[jid],limit:1}]);
+    const ev=await pool.list(getRelays(),[{ids:[jid],limit:1}]);
     if(ev.length>0){try{const m=JSON.parse(ev[0].content);groups.push({id:ev[0].id,name:m.name||'Unnamed',about:m.about||'',pubkey:ev[0].pubkey,channels:[]})}catch{}}
   }
   return groups;
@@ -674,13 +720,13 @@ async function fetchMyGroups(){
 
 async function fetchChannels(groupId){
   await initPool();
-  const events=await pool.list(RELAYS,[{kinds:[40],'#e':[groupId],limit:50}]);
+  const events=await pool.list(getRelays(),[{kinds:[40],'#e':[groupId],limit:50}]);
   return events.map(e=>{try{const m=JSON.parse(e.content);return{id:e.id,name:m.name||'general',about:m.about||''}}catch{return null}}).filter(Boolean);
 }
 
 async function fetchMessages(channelId){
   await initPool();
-  const events=await pool.list(RELAYS,[{kinds:[42],'#e':[channelId],limit:100}]);
+  const events=await pool.list(getRelays(),[{kinds:[42],'#e':[channelId],limit:100}]);
   const seen=new Set();const deduped=[];
   for(const e of events.sort((a,b)=>a.created_at-b.created_at)){
     if(seen.has(e.id))continue;seen.add(e.id);
@@ -693,12 +739,12 @@ async function fetchMessages(channelId){
 
 async function sendMessage(channelId,text,replyToId){
   await initPool();
-  const tags=[['e',channelId,RELAYS[0],'root']];
+  const tags=[['e',channelId,getRelays()[0],'root']];
   if(replyToId){
-    tags.push(['e',replyToId,RELAYS[0],'reply']);
+    tags.push(['e',replyToId,getRelays()[0],'reply']);
   }
   const event=finishEvent({kind:42,content:text,tags,created_at:Math.floor(Date.now()/1000)},state.user.sk);
-  try{await Promise.any(pool.publish(RELAYS,event))}catch(e){console.warn('publish',e)}
+  try{await Promise.any(pool.publish(getRelays(),event))}catch(e){console.warn('publish',e)}
   if(!state.messages.some(m=>m.id===event.id))state.messages.push({id:event.id,content:text,author:state.user.pk,time:new Date(),isBot:false,replyTo:replyToId||null});
   render();
 }
@@ -789,7 +835,7 @@ function closeAllModals(){
   if(state.showSettingsModal){state.showSettingsModal=false;closed=true}
   if(state.showMembersPanel){state.showMembersPanel=false;closed=true}
   if(state.showChannelSearch){state.showChannelSearch=false;state.channelSearchQuery='';closed=true}
-  if(state.view==='settings'){state.view='app';closed=true}
+  if(state.view==='settings'||state.view==='relays'){state.view='app';closed=true}
   if(state.replyingTo){state.replyingTo=null;state.replyingToContent=null;closed=true}
   if(state.mentionQuery!==null){state.mentionQuery=null;closed=true}
   if(closed)render();
@@ -797,7 +843,7 @@ function closeAllModals(){
 function subscribeMessages(channelId){
   if(sub)sub.unsub();
   initPool().then(()=>{
-    sub=pool.sub(RELAYS,[{kinds:[42],'#e':[channelId],limit:0,since:Math.floor(Date.now()/1000)}]);
+    sub=pool.sub(getRelays(),[{kinds:[42],'#e':[channelId],limit:0,since:Math.floor(Date.now()/1000)}]);
     sub.on('event',(event)=>{
       // Deduplicate by event ID
       if(state.messages.some(m=>m.id===event.id))return;
@@ -839,8 +885,8 @@ function scrollMessages(){const el=document.getElementById('messages');if(el)el.
 // --- Message editing (kind 42 with edit tag) ---
 async function editMessage(channelId, messageId, newText) {
   await initPool();
-  const event = finishEvent({kind:42, content:newText, tags:[['e',channelId,RELAYS[0],'root'],['e',messageId,RELAYS[0],'reply'],['edit',messageId]], created_at:Math.floor(Date.now()/1000)}, state.user.sk);
-  try{await Promise.any(pool.publish(RELAYS,event))}catch(e){console.warn('publish',e)}
+  const event = finishEvent({kind:42, content:newText, tags:[['e',channelId,getRelays()[0],'root'],['e',messageId,getRelays()[0],'reply'],['edit',messageId]], created_at:Math.floor(Date.now()/1000)}, state.user.sk);
+  try{await Promise.any(pool.publish(getRelays(),event))}catch(e){console.warn('publish',e)}
   // Update local state
   const msg = state.messages.find(m=>m.id===messageId);
   if(msg){msg.content=newText;msg.edited=true}
@@ -878,7 +924,7 @@ function renderPinnedMessage(){
 async function deleteMessage(messageId) {
   await initPool();
   const event = finishEvent({kind:5, content:'', tags:[['e',messageId]], created_at:Math.floor(Date.now()/1000)}, state.user.sk);
-  try{await Promise.any(pool.publish(RELAYS,event))}catch(e){console.warn('publish',e)}
+  try{await Promise.any(pool.publish(getRelays(),event))}catch(e){console.warn('publish',e)}
   state.messages = state.messages.filter(m=>m.id!==messageId);
   render();
 }
@@ -888,7 +934,7 @@ async function hideMessage(messageId) {
   await initPool();
   const channelId = state.activeChannel;
   const event = finishEvent({kind:43, content:'', tags:[['e',messageId],['e',channelId,'','context']], created_at:Math.floor(Date.now()/1000)}, state.user.sk);
-  try{await Promise.any(pool.publish(RELAYS,event))}catch(e){console.warn('publish',e)}
+  try{await Promise.any(pool.publish(getRelays(),event))}catch(e){console.warn('publish',e)}
   state.messages = state.messages.filter(m=>m.id!==messageId);
   showToast('Message hidden');
   render();
@@ -896,7 +942,7 @@ async function hideMessage(messageId) {
 async function muteUserInSaloon(pubkey, groupId) {
   await initPool();
   const event = finishEvent({kind:44, content:'', tags:[['p',pubkey],['e',groupId,'','context']], created_at:Math.floor(Date.now()/1000)}, state.user.sk);
-  try{await Promise.any(pool.publish(RELAYS,event))}catch(e){console.warn('publish',e)}
+  try{await Promise.any(pool.publish(getRelays(),event))}catch(e){console.warn('publish',e)}
   // Remove their messages from local state
   state.messages = state.messages.filter(m=>m.author!==pubkey);
   showToast('User muted in this saloon');
@@ -907,7 +953,7 @@ async function fetchHiddenMessages(channelId) {
   const g = state.groups.find(x=>x.id===state.activeGroup);
   if(!g) return [];
   const owner = g.pubkey;
-  const events = await pool.list(RELAYS, [{kinds:[43], '#e':[channelId], authors:[owner], limit:100}]);
+  const events = await pool.list(getRelays(), [{kinds:[43], '#e':[channelId], authors:[owner], limit:100}]);
   return events.map(e => e.tags.find(t=>t[0]==='e' && t[1]!==channelId)?.[1]).filter(Boolean);
 }
 async function fetchMutedUsers(groupId) {
@@ -915,9 +961,9 @@ async function fetchMutedUsers(groupId) {
   const g = state.groups.find(x=>x.id===groupId);
   if(!g) return [];
   const owner = g.pubkey;
-  const events = await pool.list(RELAYS, [{kinds:[44], '#e':[groupId,'','context'], authors:[owner], limit:100}]);
+  const events = await pool.list(getRelays(), [{kinds:[44], '#e':[groupId,'','context'], authors:[owner], limit:100}]);
   // Also check our own mute events
-  const myEvents = await pool.list(RELAYS, [{kinds:[44], '#e':[groupId,'','context'], authors:[state.user.pk], limit:100}]);
+  const myEvents = await pool.list(getRelays(), [{kinds:[44], '#e':[groupId,'','context'], authors:[state.user.pk], limit:100}]);
   const all = [...events, ...myEvents];
   return all.map(e => e.tags.find(t=>t[0]==='p')?.[1]).filter(Boolean);
 }
@@ -929,11 +975,11 @@ async function toggleReaction(messageId, emoji) {
   if(existing) {
     // Delete our reaction (kind 5)
     const delEvent = finishEvent({kind:5, content:'', tags:[['e',existing.id]], created_at:Math.floor(Date.now()/1000)}, state.user.sk);
-    try{await Promise.any(pool.publish(RELAYS,delEvent))}catch(e){console.warn('publish',e)}
+    try{await Promise.any(pool.publish(getRelays(),delEvent))}catch(e){console.warn('publish',e)}
     state.reactions[messageId] = (state.reactions[messageId]||[]).filter(r=>r.id!==existing.id);
   } else {
-    const event = finishEvent({kind:7, content:emoji, tags:[['e',messageId,RELAYS[0],'reply'],['p',state.user.pk]], created_at:Math.floor(Date.now()/1000)}, state.user.sk);
-    try{await Promise.any(pool.publish(RELAYS,event))}catch(e){console.warn('publish',e)}
+    const event = finishEvent({kind:7, content:emoji, tags:[['e',messageId,getRelays()[0],'reply'],['p',state.user.pk]], created_at:Math.floor(Date.now()/1000)}, state.user.sk);
+    try{await Promise.any(pool.publish(getRelays(),event))}catch(e){console.warn('publish',e)}
     if(!state.reactions[messageId])state.reactions[messageId]=[];
     state.reactions[messageId].push({id:event.id,emoji,author:state.user.pk});
   }
@@ -942,7 +988,7 @@ async function toggleReaction(messageId, emoji) {
 
 async function fetchReactions(channelId) {
   await initPool();
-  const events = await pool.list(RELAYS, [{kinds:[7], '#e':[channelId], limit:200}]);
+  const events = await pool.list(getRelays(), [{kinds:[7], '#e':[channelId], limit:200}]);
   const reacts = {};
   for(const e of events) {
     for(const t of e.tags) {
@@ -959,8 +1005,8 @@ async function fetchReactions(channelId) {
 let typingTimer = null;
 async function broadcastTyping(channelId) {
   await initPool();
-  const event = finishEvent({kind:1, content:'', tags:[['typing','1'],['e',channelId,RELAYS[0],'root']], created_at:Math.floor(Date.now()/1000)}, state.user.sk);
-  try{await Promise.any(pool.publish(RELAYS,event))}catch(e){console.warn('publish',e)}
+  const event = finishEvent({kind:1, content:'', tags:[['typing','1'],['e',channelId,getRelays()[0],'root']], created_at:Math.floor(Date.now()/1000)}, state.user.sk);
+  try{await Promise.any(pool.publish(getRelays(),event))}catch(e){console.warn('publish',e)}
 }
 
 function onTyping() {
@@ -973,7 +1019,7 @@ function onTyping() {
 function subscribeTyping(channelId) {
   if(sub)sub.unsub();
   initPool().then(()=>{
-    sub=pool.sub(RELAYS,[{kinds:[1], '#e':[channelId], limit:0, since:Math.floor(Date.now()/1000)}]);
+    sub=pool.sub(getRelays(),[{kinds:[1], '#e':[channelId], limit:0, since:Math.floor(Date.now()/1000)}]);
     sub.on('event',(event)=>{
       if(event.tags.some(t=>t[0]==='typing')) {
         const pubkey = event.pubkey;
@@ -1000,8 +1046,8 @@ function renderTypingIndicator() {
 // --- Saloon settings (kind 41 metadata update) ---
 async function updateGroupMetadata(groupId, name, about) {
   await initPool();
-  const event = finishEvent({kind:41, content:JSON.stringify({name, about, picture:'', relays:RELAYS}), tags:[['e',groupId,RELAYS[0],'root']], created_at:Math.floor(Date.now()/1000)}, state.user.sk);
-  try{await Promise.any(pool.publish(RELAYS,event))}catch(e){console.warn('publish',e)}
+  const event = finishEvent({kind:41, content:JSON.stringify({name, about, picture:'', relays:getRelays()}), tags:[['e',groupId,getRelays()[0],'root']], created_at:Math.floor(Date.now()/1000)}, state.user.sk);
+  try{await Promise.any(pool.publish(getRelays(),event))}catch(e){console.warn('publish',e)}
   const g = state.groups.find(x=>x.id===groupId);
   if(g){g.name=name;g.about=about}
   render();
@@ -1200,8 +1246,8 @@ async function sendDM(pubkey, text){
 
   // 5. Publish both gift wraps
   try{
-    await Promise.any(pool.publish(RELAYS, giftWrapRecipient));
-    await Promise.any(pool.publish(RELAYS, giftWrapSender));
+    await Promise.any(pool.publish(getRelays(), giftWrapRecipient));
+    await Promise.any(pool.publish(getRelays(), giftWrapSender));
   }catch(e){console.warn('publish DM',e)}
 
   // 6. Add to local state immediately
@@ -1220,10 +1266,10 @@ async function fetchDMs(pubkey){
 
   // Fetch ALL gift wraps addressed to us (kind 1059 with our pubkey in 'p' tag)
   // Then filter for conversations with the DM partner (pubkey parameter)
-  const giftWraps=await pool.list(RELAYS,[{kinds:[1059],'#p':[myPk],limit:100}]);
+  const giftWraps=await pool.list(getRelays(),[{kinds:[1059],'#p':[myPk],limit:100}]);
 
   // Also fetch old NIP-04 (kind 4) messages for backwards compatibility
-  const oldDmEvents=await pool.list(RELAYS,[{kinds:[4],'#p':[pubkey],limit:50},{kinds:[4],authors:[pubkey],limit:50}]);
+  const oldDmEvents=await pool.list(getRelays(),[{kinds:[4],'#p':[pubkey],limit:50},{kinds:[4],authors:[pubkey],limit:50}]);
 
   const messages=[];
 
@@ -1309,7 +1355,7 @@ let dmSub=null;
 function subscribeDMs(pubkey){
   if(dmSub){try{dmSub.unsub()}catch(e){}}
   // Subscribe to gift wraps addressed to our pubkey
-  dmSub=pool.sub(RELAYS,[{kinds:[1059],'#p':[pubkey]}]);
+  dmSub=pool.sub(getRelays(),[{kinds:[1059],'#p':[pubkey]}]);
   dmSub.on('event',async(event)=>{
     // Only process if we have an active DM conversation with someone
     if(!state.activeDM)return;
@@ -1364,13 +1410,14 @@ function doRender(){
   if(state.view==='onboard'||!state.user){app.innerHTML=renderOnboard();return}
   if(state.view==='keybackup'){app.innerHTML=renderKeyBackup();return}
   if(state.view==='settings'){app.innerHTML=renderSettingsPage();return}
+  if(state.view==='relays'){app.innerHTML=renderRelaysPage();checkAllRelays();return}
+  if(state.view==='profile'){app.innerHTML=renderProfilePage();return}
+  if(state.view==='saloonSettings'){app.innerHTML=renderSaloonSettingsPage();return}
   let html=renderMain();
-  if(state.showProfile)html+=renderProfileModal();
   if(state.viewingProfile)html+=renderViewProfileModal();
   if(state.showCreateGroupModal)html+=renderCreateGroupModal();
   if(state.showCreateChannelModal)html+=renderCreateChannelModal();
   if(state.showNewDMModal)html+=renderNewDMModal();
-  if(state.showSettingsModal)html+=renderSettingsModal();
   if(state.showMembersPanel)html+=renderMembersPanel();
   app.innerHTML=html;
   setupScrollListener();
@@ -1831,6 +1878,75 @@ function renderMembersPanel(){
   </div>`;
 }
 
+// --- Full-screen profile page (replaces modal) ---
+function renderProfilePage(){
+  const avatarBgStr=avatarBg(state.user.pk);
+  return `<div style="display:flex;flex-direction:column;height:100dvh;background:var(--bg-main)">
+    <div style="display:flex;align-items:center;gap:12px;padding:max(12px,env(safe-area-inset-top)) 16px 12px;box-shadow:0 1px 0 rgba(0,0,0,.08)">
+      <button onclick="state.view='app';render()" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;padding:4px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
+      <div style="font-weight:600;font-size:1em">Your Profile</div>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:24px 20px max(24px,env(safe-area-inset-bottom))">
+      <div style="max-width:440px;margin:0 auto">
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px">
+          <div style="width:64px;height:64px;border-radius:50%;background:${avatarBgStr};display:flex;align-items:center;justify-content:center;font-size:1.5em;font-weight:700;color:#fff;overflow:hidden;border:none">${state.user.picture?`<img src="${escapeHtml(state.user.picture)}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">`:(state.user.name||'?')[0].toUpperCase()}</div>
+          <div>
+            <div style="font-weight:700;font-size:1.2em">${escapeHtml(state.user.name||'Anon')}</div>
+            <div style="font-size:.8em;color:var(--text-tertiary);font-family:monospace;cursor:pointer" onclick="copyNpub()" title="Click to copy">${state.user.npub?.slice(0,20)||''}…</div>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:16px"><label>Display name</label><input type="text" id="profName" value="${escapeHtml(state.user.name||'')}" placeholder="Your name" style="width:100%;background:var(--bg-hover);border:1px solid transparent;color:var(--text);padding:12px 16px;border-radius:20px;font-size:16px;font-family:inherit"></div>
+        <div class="field" style="margin-bottom:16px"><label>About</label><textarea id="profAbout" placeholder="Something about yourself..." style="width:100%;background:var(--bg-hover);border:1px solid transparent;color:var(--text);padding:12px 16px;border-radius:20px;font-size:16px;font-family:inherit;min-height:80px;resize:vertical">${escapeHtml(state.user.about||'')}</textarea></div>
+        <div class="field" style="margin-bottom:16px"><label>Avatar</label><div style="display:flex;gap:8px;align-items:center"><input type="text" id="profPic" value="${escapeHtml(state.user.picture||'')}" placeholder="Paste URL or upload" style="flex:1;background:var(--bg-hover);border:1px solid transparent;color:var(--text);padding:12px 16px;border-radius:20px;font-size:16px;font-family:inherit"><input type="file" accept="image/*" style="display:none" onchange="handleAvatarUpload(this.files[0],'profPic')"><button type="button" onclick="this.previousElementSibling.click()" style="background:var(--bg-hover);border:none;color:var(--text-secondary);padding:10px 14px;border-radius:var(--radius-md);cursor:pointer;font-size:.8em;white-space:nowrap">Upload</button></div></div>
+        <div class="field" style="margin-bottom:16px"><label>Link</label><input type="text" id="profLink" value="${escapeHtml(state.user.link||'')}" placeholder="https://yoursite.com" style="width:100%;background:var(--bg-hover);border:1px solid transparent;color:var(--text);padding:12px 16px;border-radius:20px;font-size:16px;font-family:inherit"></div>
+        <div class="field" style="margin-bottom:24px"><label>Are you an agent?</label>
+          <select id="profAgent" style="width:100%;background:var(--bg-hover);border:1px solid transparent;color:var(--text);padding:12px 16px;border-radius:20px;font-size:16px;font-family:inherit">
+            <option value="false" ${!state.user.isAgent?'selected':''}>No, I'm human</option>
+            <option value="true" ${state.user.isAgent?'selected':''}>Yes, I'm an agent</option>
+          </select>
+        </div>
+        <button onclick="saveProfileFromPage()" style="width:100%;padding:14px;background:var(--accent);color:#000;border:none;border-radius:20px;font-weight:600;font-size:1em;cursor:pointer;font-family:inherit">Save Profile</button>
+      </div>
+    </div>
+  </div>`;
+}
+function saveProfileFromPage(){
+  const name=document.getElementById('profName')?.value||'';
+  const about=document.getElementById('profAbout')?.value||'';
+  const picture=document.getElementById('profPic')?.value||'';
+  const link=document.getElementById('profLink')?.value||'';
+  const isAgent=document.getElementById('profAgent')?.value==='true';
+  state.user={...state.user,name,about,picture,link,isAgent};
+  saveUser();
+  publishProfile();
+  showToast('Profile saved');
+  state.view='app';
+  render();
+}
+
+// --- Full-screen saloon settings page (replaces modal) ---
+function renderSaloonSettingsPage(){
+  const g=state.groups.find(x=>x.id===state.activeGroup);
+  if(!g)return'';
+  const channels=state.channels[g.id]||[];
+  return `<div style="display:flex;flex-direction:column;height:100dvh;background:var(--bg-main)">
+    <div style="display:flex;align-items:center;gap:12px;padding:max(12px,env(safe-area-inset-top)) 16px 12px;box-shadow:0 1px 0 rgba(0,0,0,.08)">
+      <button onclick="state.view='app';render()" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;padding:4px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
+      <div style="font-weight:600;font-size:1em">Saloon Settings</div>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:24px 20px max(24px,env(safe-area-inset-bottom))">
+      <div style="max-width:440px;margin:0 auto">
+        <div class="field" style="margin-bottom:16px"><label>Saloon name</label><input type="text" id="settingsGroupName" value="${escapeHtml(g.name)}" style="width:100%;background:var(--bg-hover);border:1px solid transparent;color:var(--text);padding:12px 16px;border-radius:20px;font-size:16px;font-family:inherit"></div>
+        <div class="field" style="margin-bottom:16px"><label>Description</label><textarea id="settingsGroupAbout" placeholder="About this saloon" style="width:100%;background:var(--bg-hover);border:1px solid transparent;color:var(--text);padding:12px 16px;border-radius:20px;font-size:16px;font-family:inherit;min-height:80px;resize:vertical">${escapeHtml(g.about||'')}</textarea></div>
+        <div class="field" style="margin-bottom:16px"><label>Invite link</label><div style="display:flex;gap:8px;align-items:center"><input type="text" readonly value="https://buckzz7.github.io/saloonspace/#join=${g.id}" style="flex:1;font-size:.75em;font-family:monospace;opacity:.7;background:var(--bg-hover);border:1px solid transparent;padding:10px 12px;border-radius:20px" onclick="this.select()"><button onclick="navigator.clipboard.writeText('https://buckzz7.github.io/saloonspace/#join=${g.id}');showToast('Invite link copied')" style="background:var(--bg-hover);border:none;color:var(--text-secondary);padding:10px 14px;border-radius:var(--radius-md);cursor:pointer;font-size:.8em;white-space:nowrap">Copy</button></div></div>
+        <div class="field" style="margin-bottom:24px"><label>Tables (${channels.length})</label>${channels.map(c=>`<div class="channel-list-item"><span># ${escapeHtml(c.name)}</span><button onclick="removeChannel('${g.id}','${c.id}')" style="color:var(--danger);background:none;border:none;cursor:pointer;font-size:.85em">Remove</button></div>`).join('')||'<div style="color:var(--text-tertiary);font-size:.85em">No tables</div>'}</div>
+        <button onclick="submitSettings('${g.id}');state.view='app';render()" style="width:100%;padding:14px;background:var(--accent);color:#000;border:none;border-radius:20px;font-weight:600;font-size:1em;cursor:pointer;font-family:inherit;margin-bottom:12px">Save</button>
+        <button onclick="confirmLeaveSaloon('${g.id}','${g.pubkey===state.user.pk?'delete':'leave'}')" style="width:100%;padding:12px;color:var(--danger);background:none;border:1px solid var(--danger);border-radius:20px;cursor:pointer;font-size:.88em;font-family:inherit;transition:all .15s ease">${g.pubkey===state.user.pk?'Delete saloon':'Leave saloon'}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
 function renderSettingsPage(){
   const isAgent=state.user.isAgent||false;
   const isDark=state.theme==='dark';
@@ -1862,7 +1978,10 @@ function renderSettingsPage(){
         <span class="relay-dot ${relayStatus}"></span>
         <span>Relays: ${relayStatus}</span>
       </div>
-      <div style="font-size:.78em;color:var(--text-tertiary);margin-top:6px">${RELAYS.join(', ')}</div>
+      <div class="settings-nav-row" onclick="openRelaysPage()">
+        <span>Relays</span>
+        <span style="display:flex;align-items:center;gap:6px"><span style="font-size:.8em;color:var(--text-tertiary)">${getRelays().length}</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-tertiary)"><polyline points="9 18 15 12 9 6"/></svg></span>
+      </div>
     </div>
     <div class="settings-section">
       <h2>Keys</h2>
@@ -1884,6 +2003,123 @@ function renderSettingsPage(){
     </div>
   </div>`;
 }
+
+// --- Relay management page ---
+function domainFromUrl(url){try{return new URL(url).hostname}catch(e){return url.replace(/^wss?:\/\//,'').split('/')[0]}}
+function renderRelaysPage(){
+  const relays=getRelays();
+  const backIcon=`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>`;
+  const trashIcon=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`;
+  const checkIcon=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+  let relayListHtml=relays.map((url,idx)=>{
+    const domain=domainFromUrl(url);
+    const status=window.relayStatusMap[url]||'checking';
+    const pillClass=status==='online'?'relay-pill-online':status==='error'?'relay-pill-error':'relay-pill-checking';
+    const pillText=status==='online'?'Online':status==='error'?'Error':'…';
+    return `<div class="relay-row" id="relay-row-${idx}">
+      <img src="https://${domain}/favicon.ico" class="relay-favicon" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="">
+      <div class="relay-favicon-fallback" style="display:none;background:var(--bg-elevated)">${domain[0]?.toUpperCase()||'R'}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-family:monospace;font-size:.88em;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(url)}</div>
+      </div>
+      <span class="relay-pill ${pillClass}" id="relay-pill-${idx}">${pillText}</span>
+      <button class="relay-trash-btn" onclick="removeRelay('${escapeHtml(url)}')" title="Remove relay">${trashIcon}</button>
+    </div>`;
+  }).join('');
+  const recommendedHtml=RECOMMENDED_RELAYS.filter(r=>!relays.includes(r)).map(r=>{
+    const domain=domainFromUrl(r);
+    return `<div class="relay-row relay-row-recommended">
+      <img src="https://${domain}/favicon.ico" class="relay-favicon" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="">
+      <div class="relay-favicon-fallback" style="display:none;background:var(--bg-elevated)">${domain[0]?.toUpperCase()||'R'}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-family:monospace;font-size:.88em;color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(r)}</div>
+      </div>
+      <button class="relay-add-btn" onclick="addRelay('${escapeHtml(r)}')">${checkIcon} Add</button>
+    </div>`;
+  }).join('');
+  return `<div class="relays-page">
+    <div class="relays-header">
+      <button class="relays-back-btn" onclick="closeRelaysPage()">${backIcon}</button>
+      <h1>Relays</h1>
+    </div>
+    <div class="relays-content">
+      <h2 class="relays-section-title">My Relays</h2>
+      <div class="relay-list">${relayListHtml}</div>
+      <div class="relay-add-input-row">
+        <input type="text" id="relayAddInput" placeholder="wss://relay.example.com" class="relay-add-input">
+        <button class="relay-add-btn" onclick="addRelayFromInput()">${checkIcon}</button>
+      </div>
+      ${recommendedHtml?`<h2 class="relays-section-title" style="margin-top:24px">Recommended</h2><div class="relay-list">${recommendedHtml}</div>`:''}
+    </div>
+  </div>`;
+}
+async function checkAllRelays(){
+  const relays=getRelays();
+  // Reset status to checking
+  for(const url of relays){window.relayStatusMap[url]='checking'}
+  // Update pills to show checking state
+  for(let i=0;i<relays.length;i++){
+    const pill=document.getElementById('relay-pill-'+i);
+    if(pill){pill.className='relay-pill relay-pill-checking';pill.textContent='…'}
+  }
+  // Test each relay independently
+  for(let i=0;i<relays.length;i++){
+    const url=relays[i];
+    testRelay(url,i);
+  }
+}
+async function testRelay(url,index){
+  try{
+    const testPool=new SimplePool();
+    const timeoutPromise=new Promise((_,reject)=>setTimeout(()=>reject(new Error('timeout')),5000));
+    const result=await Promise.race([
+      testPool.list([url],[{kinds:[1],limit:1}]),
+      timeoutPromise
+    ]);
+    window.relayStatusMap[url]='online';
+    const pill=document.getElementById('relay-pill-'+index);
+    if(pill){pill.className='relay-pill relay-pill-online';pill.textContent='Online'}
+    try{testPool.close&&(typeof testPool.close==='function')&&testPool.close()}catch(e){}
+  }catch(e){
+    window.relayStatusMap[url]='error';
+    const pill=document.getElementById('relay-pill-'+index);
+    if(pill){pill.className='relay-pill relay-pill-error';pill.textContent='Error'}
+  }
+}
+function openRelaysPage(){state.view='relays';render()}
+function closeRelaysPage(){state.view='settings';render()}
+function addRelay(url){
+  url=url.trim();
+  if(!url){showToast('Enter a relay URL');return}
+  if(!url.startsWith('wss://')&&!url.startsWith('ws://')){url='wss://'+url}
+  const relays=getRelays();
+  if(relays.includes(url)){showToast('Relay already added');return}
+  relays.push(url);
+  setRelays(relays);
+  showToast('Relay added');
+  render();
+  checkAllRelays();
+}
+function addRelayFromInput(){
+  const input=document.getElementById('relayAddInput');
+  if(!input)return;
+  addRelay(input.value);
+}
+function removeRelay(url){
+  let relays=getRelays();
+  relays=relays.filter(r=>r!==url);
+  if(relays.length===0){showToast('Keep at least one relay');return}
+  setRelays(relays);
+  showToast('Relay removed');
+  render();
+  checkAllRelays();
+}
+window.openRelaysPage=openRelaysPage;
+window.closeRelaysPage=closeRelaysPage;
+window.addRelay=addRelay;
+window.addRelayFromInput=addRelayFromInput;
+window.removeRelay=removeRelay;
+window.checkAllRelays=checkAllRelays;
 
 // --- Actions ---
 function escapeHtml(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML}
@@ -2175,7 +2411,7 @@ function submitNewDM(){
 }
 
 function showSettingsModal(){state.showSettingsModal=true;render()}
-function openSettings(groupId){state.showSettingsModal=groupId;render()}
+function openSettings(groupId){state.activeGroup=groupId;state.view='saloonSettings';render()}
 function closeSettingsModal(){state.showSettingsModal=false;render()}
 function leaveSaloon(groupId){
   const g=state.groups.find(x=>x.id===groupId);
@@ -2223,7 +2459,7 @@ function showCreateGroup(){showCreateGroupModal()}
 function showCreateChannel(groupId){showCreateChannelModal(groupId)}
 function showNewDM(){showNewDMModal()}
 
-function openProfile(){state.showProfile=true;render()}
+function openProfile(){state.view='profile';render()}
 function closeProfile(){state.showProfile=false;render()}
 
 async function viewProfile(pubkey){
@@ -2307,7 +2543,7 @@ async function openMembersPanel(){
   }
   if(missing.length>0){
     await initPool();
-    const events=await pool.list(RELAYS,[{kinds:[0],authors:missing,limit:missing.length}]);
+    const events=await pool.list(getRelays(),[{kinds:[0],authors:missing,limit:missing.length}]);
     for(const e of events){
       try{
         const prof=JSON.parse(e.content);
@@ -2494,7 +2730,7 @@ async function fetchMessageProfiles(){
   await initPool();
   // Batch all unknown pubkeys into a single pool.list() query
   // nostr-tools supports multiple authors in a single filter
-  const events=await pool.list(RELAYS,[{kinds:[0],authors:unknown,limit:unknown.length}]);
+  const events=await pool.list(getRelays(),[{kinds:[0],authors:unknown,limit:unknown.length}]);
   const fetched=new Set();
   for(const e of events){
     try{
@@ -2522,11 +2758,11 @@ async function broadcastPresence() {
     tags: [['d', 'general']],
     created_at: Math.floor(Date.now()/1000)
   }, state.user.sk);
-  try { await Promise.any(pool.publish(RELAYS, event)); } catch(e){}
+  try { await Promise.any(pool.publish(getRelays(), event)); } catch(e){}
 }
 async function fetchPresence(pubkeys) {
   await initPool();
-  const events = await pool.list(RELAYS, [{kinds:[30315], authors: pubkeys, limit: pubkeys.length}]);
+  const events = await pool.list(getRelays(), [{kinds:[30315], authors: pubkeys, limit: pubkeys.length}]);
   const presence = {};
   const now = Math.floor(Date.now()/1000);
   events.forEach(e => {
@@ -2551,7 +2787,9 @@ async function init(){
   });
   window.addEventListener('popstate',()=>{
     if(state.showProfile||state.viewingProfile||state.showCreateGroupModal||state.showCreateChannelModal||state.showNewDMModal||state.showSettingsModal){
-      state.showProfile=false;state.viewingProfile=null;state.showCreateGroupModal=false;state.showCreateChannelModal=false;state.showNewDMModal=false;state.showSettingsModal=false;state.showMembersPanel=false;state.replyingTo=null;state.replyingToContent=null;if(state.view==='settings')state.view='app';render();
+      state.showCreateGroupModal=false;state.showCreateChannelModal=false;state.showNewDMModal=false;state.showMembersPanel=false;state.replyingTo=null;state.replyingToContent=null;
+      if(state.view==='settings'||state.view==='profile'||state.view==='saloonSettings'||state.view==='relays')state.view='app';
+      render();
       history.pushState(null,'',location.href);
     } else if(state.sidebarOpen){
       state.sidebarOpen=false;render();
@@ -2573,7 +2811,7 @@ async function init(){
     // Broadcast offline on page close
     window.addEventListener('beforeunload', () => {
       const event = finishEvent({kind:30315, content:'{"status":"offline"}', tags:[['d','general']], created_at:Math.floor(Date.now()/1000)}, state.user.sk);
-      Promise.any(pool.publish(RELAYS, event)).catch(()=>{});
+      Promise.any(pool.publish(getRelays(), event)).catch(()=>{});
     });
     // Auto-join if pending
     if(state.pendingJoinId){
@@ -2612,7 +2850,7 @@ window.showCreateGroup=showCreateGroup;window.showCreateChannel=showCreateChanne
 window.showNewDM=showNewDM;window.createAccount=createAccount;window.loginExisting=loginExisting;
 window.finishKeyBackup=finishKeyBackup;window.showKeys=showKeys;window.copyNsec=copyNsec;
 window.toggleSidebar=toggleSidebar;window.toggleChannelSidebar=toggleChannelSidebar;window.closeAllSidebars=closeAllSidebars;window.backToSaloons=backToSaloons;window.mobileMenuClick=mobileMenuClick;window.switchTab=switchTab;window.saveProfile=saveProfile;
-window.openProfile=openProfile;window.closeProfile=closeProfile;
+window.openProfile=openProfile;window.closeProfile=closeProfile;window.saveProfileFromPage=saveProfileFromPage;
 window.viewProfile=viewProfile;window.closeViewProfile=closeViewProfile;window.startDM=startDM;
 window.logout=logout;window.onSearchInput=onSearchInput;window.onDMSearchInput=onDMSearchInput;
 window.onMsgInput=onMsgInput;window.onMsgKeydown=onMsgKeydown;window.onDMMsgKeydown=onDMMsgKeydown;window.autoResize=autoResize;window.insertMention=insertMention;
