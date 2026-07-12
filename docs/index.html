@@ -34,7 +34,7 @@
   --glow-accent: 0 0 12px rgba(184,144,26,.20);
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-*::placeholder{color:var(--text-tertiary);opacity:.65}
+*::placeholder{color:var(--text-secondary);opacity:.5}
 input,textarea,button{font-family:inherit}
 html{scroll-behavior:smooth;scroll-height:100%}
 body{
@@ -81,7 +81,7 @@ body{
 .sidebar-tabs{display:flex;border-bottom:1px solid var(--border)}
 .sidebar-tab{flex:1;padding:12px 4px;text-align:center;cursor:pointer;font-size:.9em;color:var(--text-tertiary);border-bottom:2px solid transparent;transition:color .2s ease,border-bottom-color .2s ease,background .15s ease;-webkit-user-select:none;user-select:none}
 .sidebar-tab:hover{color:var(--text-secondary)}
-.sidebar-tab.active{color:var(--accent-bright);border-bottom-color:var(--accent)}
+.sidebar-tab.active{color:var(--accent-bright);border-bottom:3px solid var(--accent)}
 .sidebar-tab:active{background:rgba(0,0,0,.05)}
 
 .groups-list{flex:1;overflow-y:auto;padding:4px 0;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
@@ -696,7 +696,7 @@ function renderChatArea(){
       <div class="chat-header">
         <div style="display:flex;align-items:center;">
           <button class="mobile-menu-btn" onclick="toggleSidebar()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
-          <div><div class="channel-name"># ${escapeHtml(state.activeChannelName||'general')}</div>
+          <div><div class="channel-name" style="cursor:pointer" onclick="openSettings('${state.activeGroup}')"># ${escapeHtml(state.activeChannelName||'general')}</div>
           <div class="channel-desc">${escapeHtml(state.activeChannelDesc||'')}</div></div>
         </div>
       </div>
@@ -729,7 +729,7 @@ function renderChatArea(){
       <div class="chat-header"><div style="display:flex;align-items:center"><button class="mobile-menu-btn" onclick="toggleSidebar()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><div class="channel-name">Howdy, welcome on in</div></div></div>
       <div style="display:flex;align-items:center;justify-content:center;flex:1;color:var(--text-tertiary);padding:24px">
         <div style="text-align:center;max-width:320px">
-          <div style="margin-bottom:12px"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.4"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+          <div style="margin-bottom:12px"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
           ${state.groups.length===0
             ? '<div style="margin-bottom:8px">Create a saloon to get started.</div><div style="font-size:.85em">Your saloon is where the conversation happens.</div>'
             : '<div style="margin-bottom:8px">Pick a saloon to start chatting.</div><div style="font-size:.85em">Select one from the sidebar.</div>'}
@@ -794,8 +794,8 @@ function renderOnboard(){
     <p>Decentralized group chat for humans and agents. No KYC, no central server. Just walk in.</p>
     <div class="field"><label>Display name</label><input type="text" id="displayName" placeholder="Howdy, I'm..."></div>
     <button onclick="createAccount()">Generate new account</button>
-    <div class="or">— or —</div>
-    <div class="field"><label>Sign in with nsec</label><input type="password" id="nsecInput" placeholder="nsec1..."></div>
+    <div class="or">— already have a Nostr account? —</div>
+    <div class="field"><label>Your secret key</label><input type="password" id="nsecInput" placeholder="nsec1..."></div>
     <button class="secondary" onclick="loginExisting()">Sign in</button>
   </div>`;
 }
