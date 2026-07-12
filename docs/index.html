@@ -1106,6 +1106,9 @@ function startEdit(messageId){
   if(inp){inp.value=msg.content;inp.focus()}
   state.editingMessageId=messageId;
 }
+function cancelEdit(){state.editingMessageId=null;const inp=document.getElementById('msgText');if(inp){inp.value='';inp.focus()}}
+function onMessagesScroll(){const el=document.getElementById('messages');if(!el)return;const atBottom=el.scrollHeight-el.scrollTop-el.clientHeight<60;state.atBottom=atBottom;const btn=document.getElementById('scrollBottomBtn');if(btn){btn.style.display=atBottom?'none':'flex'}}
+
 async function sendMsg(){
   const input=document.getElementById('msgText');const text=input?.value.trim();
   if(!text)return;
@@ -1168,10 +1171,10 @@ window.showNewDMModal=showNewDMModal;window.closeNewDMModal=closeNewDMModal;
 window.submitNewDM=submitNewDM;
 window.openSettings=openSettings;window.closeSettingsModal=closeSettingsModal;
 window.submitSettings=submitSettings;
-window.showSaloonSettings=showSaloonSettings;window.closeSaloonSettings=closeSaloonSettings;
-window.saveSaloonSettings=saveSaloonSettings;window.removeChannelFromSaloon=removeChannelFromSaloon;
+window.showSaloonSettings=showSettingsModal;window.closeSaloonSettings=closeSettingsModal;
+window.saveSaloonSettings=submitSettings;window.removeChannelFromSaloon=removeChannel;
 window.copyNpub=copyNpub;window.onMessagesScroll=onMessagesScroll;
-window.cancelEdit=cancelEdit;window.showCreateChannelFromSettings=showCreateChannelFromSettings;
+window.cancelEdit=cancelEdit;window.showCreateChannelFromSettings=showCreateChannel;
 
 // Replace placeholder handlers with real ones
 window.__doCreate = createAccount;
