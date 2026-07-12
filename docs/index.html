@@ -457,12 +457,11 @@ body{
 <div id="app"></div>
 <!-- nostr-bundle.js: nostr-tools v1.17.0 IIFE — exports SimplePool, finishEvent, generatePrivateKey, getPublicKey, nip19 -->
 <script src="nostr-bundle.js"></script>
-<!-- @noble/curves for secp256k1 ECDH (needed for NIP-44 v2 / NIP-17 gift-wrap).
-     The nostr-bundle has NIP-44 internally but does not export it, so we load
-     @noble/curves separately for the ECDH shared-secret computation. -->
-<script type="module">
-  import { secp256k1 } from "https://esm.sh/@noble/curves@1.6.0/secp256k1.js";
-  window.__nobleSecp256k1 = secp256k1;
+<!-- NIP-17 DMs use NIP-44 encryption which needs @noble/curves for ECDH.
+     Loaded async — DMs gracefully degrade to NIP-04 if this fails to load. -->
+<script>
+// Dynamic import — non-blocking, won't break the app if it fails
+try{import('https://cdn.jsdelivr.net/npm/@noble/curves@1.6.0/+esm').then(m=>{window.__nobleSecp256k1=m.secp256k1}).catch(()=>{})}catch(e){}
 </script>
 <script>
 // NIP-44 v2 encryption implementation.
@@ -1030,7 +1029,9 @@ function renderMarkdown(text) {
   // Links [text](url)
   s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
   // Images ![alt](url) — including data URIs
-  s = s.replace(/!\[([^\]]*)\]\((data:image\/[^\s)]+|https?:\/\/[^\s)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;max-height:300px;border-radius:var(--radius-md);margin:4px 0;cursor:pointer" onclick="window.open(\'$2\',\'_blank\')">');
+  s = s.replace(/!\[([^\]]*)\]\((data:image\/[^\s)]+|https?:\/\/[^\s)]+)\)/g, function(match, alt, url) {
+    return '<img src="' + url + '" alt="' + alt + '" style="max-width:100%;max-height:300px;border-radius:var(--radius-md);margin:4px 0;cursor:pointer" onclick="window.open(this.src,\'_blank\')">';
+  });
   // Bare URLs → link with favicon
   s = s.replace(/(?<!["'>])(https?:\/\/[^\s<]+)/g, (match, url) => {
     let domain;
@@ -1698,7 +1699,7 @@ function renderViewProfileModal(){
       <button class="cancel" onclick="closeViewProfile()">Close</button>
       ${p!==state.user.pk?'<button class="save" onclick="startDM(\''+p+'\')">Send DM</button>':''}
     </div>
-    ${p!==state.user.pk&&state.activeGroup?"<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><button onclick="muteUserInSaloon('"+p+"','"+state.activeGroup+"')" style="width:100%;padding:8px;color:var(--danger);background:none;border:1px solid var(--danger);border-radius:var(--radius-md);cursor:pointer;font-size:.85em;font-family:inherit">Mute in this saloon</button></div>":""}
+    ${p!==state.user.pk&&state.activeGroup?`<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><button onclick="muteUserInSaloon('${p}','${state.activeGroup}')" style="width:100%;padding:8px;color:var(--danger);background:none;border:1px solid var(--danger);border-radius:var(--radius-md);cursor:pointer;font-size:.85em;font-family:inherit">Mute in this saloon</button></div>`:''}
   </div></div>`;
 }
 
