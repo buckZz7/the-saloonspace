@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>SaloonSpace</title>
 <meta name="description" content="Decentralized group chat for humans and agents. Built on Nostr. Wild West vibes.">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1a1410">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rye&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -70,6 +72,7 @@ body{
 .relay-dot.connecting{background:var(--accent-bright);animation:pulse 1s ease-in-out infinite}
 .relay-dot.connected{background:var(--green)}
 @keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
 .theme-toggle{background:var(--bg-card);border:1px solid var(--border);color:var(--accent);width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all .15s ease;flex-shrink:0;cursor:pointer}
 .theme-toggle:hover{background:var(--bg-hover);color:var(--accent-bright)}
 .theme-toggle:active{transform:scale(.92)}
@@ -136,8 +139,8 @@ body{
 .msg .content{color:var(--text);font-size:.92em;line-height:1.5;word-wrap:break-word}
 .msg-input{padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;position:sticky;bottom:0;background:color-mix(in srgb,var(--bg-card) 85%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 [data-theme="light"] .msg-input{background:color-mix(in srgb,var(--bg-card) 85%,transparent)}
-.msg-input input{flex:1;background:var(--bg-elevated);border:1px solid var(--border);color:var(--text);padding:12px 16px;border-radius:var(--radius-md);font-size:.95em;font-family:inherit;transition:border-color .2s ease,box-shadow .2s ease}
-.msg-input input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(212,160,23,.12)}
+.msg-input input,.msg-input textarea{flex:1;background:var(--bg-elevated);border:1px solid var(--border);color:var(--text);padding:12px 16px;border-radius:var(--radius-md);font-size:.95em;font-family:inherit;transition:border-color .2s ease,box-shadow .2s ease;resize:none;overflow-y:auto;max-height:calc(1.5em*5+24px);min-height:46px;line-height:1.5}
+.msg-input input:focus,.msg-input textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(212,160,23,.12)}
 .msg-input button{background:var(--accent);color:#000;border:none;padding:12px 24px;border-radius:var(--radius-md);font-weight:600;cursor:pointer;font-size:.95em;transition:all .15s ease}
 .msg-input button:hover{background:var(--accent-bright)}
 .msg-input button:active{transform:scale(.95)}
@@ -292,7 +295,7 @@ let state = {
   sidebarOpen: false, showProfile: false, viewingProfile: null, dms: [], activeDM: null,
   profiles: {},
   theme: localStorage.getItem('saloon-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
-  searchQuery: '', dmSearchQuery: '',
+  searchQuery: '', dmSearchQuery: '', lastMessages: {}, loadingMessages: false,
   showCreateGroupModal: false, showCreateChannelModal: false, showNewDMModal: false,
   createGroupModalMode: 'create', showSettingsModal: false,
   editingMessageId: null, reactions: {}, typingUsers: {},
@@ -379,14 +382,19 @@ async function fetchChannels(groupId){
 async function fetchMessages(channelId){
   await initPool();
   const events=await pool.list(RELAYS,[{kinds:[42],'#e':[channelId],limit:100}]);
-  return events.sort((a,b)=>a.created_at-b.created_at).map(e=>({id:e.id,content:e.content,author:e.pubkey,time:new Date(e.created_at*1000),isBot:false}));
+  const seen=new Set();const deduped=[];
+  for(const e of events.sort((a,b)=>a.created_at-b.created_at)){
+    if(seen.has(e.id))continue;seen.add(e.id);
+    deduped.push({id:e.id,content:e.content,author:e.pubkey,time:new Date(e.created_at*1000),isBot:false});
+  }
+  return deduped;
 }
 
 async function sendMessage(channelId,text){
   await initPool();
   const event=finishEvent({kind:42,content:text,tags:[['e',channelId,RELAYS[0],'root']],created_at:Math.floor(Date.now()/1000)},state.user.sk);
   try{await Promise.any(pool.publish(RELAYS,event))}catch(e){console.warn('publish',e)}
-  state.messages.push({id:event.id,content:text,author:state.user.pk,time:new Date(),isBot:false});
+  if(!state.messages.some(m=>m.id===event.id))state.messages.push({id:event.id,content:text,author:state.user.pk,time:new Date(),isBot:false});
   render();
 }
 
@@ -395,6 +403,8 @@ function subscribeMessages(channelId){
   initPool().then(()=>{
     sub=pool.sub(RELAYS,[{kinds:[42],'#e':[channelId],limit:0,since:Math.floor(Date.now()/1000)}]);
     sub.on('event',(event)=>{
+      // Deduplicate by event ID
+      if(state.messages.some(m=>m.id===event.id))return;
       state.messages.push({id:event.id,content:event.content,author:event.pubkey,time:new Date(event.created_at*1000),isBot:false});
       // Check for edit tags
       const editTag = event.tags.find(t=>t[0]==='edit');
@@ -611,7 +621,7 @@ async function sendDM(pubkey,text){
   // NIP-04 style for simplicity in MVP — will upgrade to NIP-17 later
   const event=finishEvent({kind:4,content:text,tags:[['p',pubkey]],created_at:Math.floor(Date.now()/1000)},state.user.sk);
   try{await Promise.any(pool.publish(RELAYS,event))}catch(e){console.warn('publish',e)}
-  state.messages.push({id:event.id,content:text,author:state.user.pk,time:new Date(),isBot:false});
+  if(!state.messages.some(m=>m.id===event.id))state.messages.push({id:event.id,content:text,author:state.user.pk,time:new Date(),isBot:false});
   render();
 }
 
@@ -685,7 +695,7 @@ function renderGroupsTab(){
         return `
         <div class="group-item ${state.activeGroup===g.id?'active':''}" onclick="selectGroup('${g.id}')">
           <span class="gicon" style="background:${avatarBg(g.id)}">${escapeHtml(g.name.slice(0,2).toUpperCase())}</span>
-          <span class="gname"><span class="saloon-name-link" onclick="event.stopPropagation();openSettings('${g.id}')">${escapeHtml(g.name)}</span></span>
+          <span class="gname"><span class="saloon-name-link" onclick="event.stopPropagation();openSettings('${g.id}')">${escapeHtml(g.name)}</span>${state.lastMessages[g.id]?`<div style="font-size:.75em;color:var(--text-tertiary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px">${escapeHtml(state.lastMessages[g.id].slice(0,40))}</div>`:''}</span>
           <span class="expand">${(state.channels[g.id]||[]).length>0?'▾':''}</span>
           ${totalUnread>0?`<span class="unread-dot"></span>`:''}
         </div>
@@ -730,7 +740,7 @@ function renderChatArea(){
       ${state.atBottom?'':`<button class="scroll-bottom-btn" id="scrollBottomBtn" onclick="scrollToBottom()">↓</button>`}
       ${state.mentionQuery?renderMentionPopup():''}
       <div class="msg-input">
-        <input type="text" id="msgText" placeholder="Type your message..." oninput="onMsgInput(this.value)" onkeydown="onMsgKeydown(event)">
+        <textarea id="msgText" rows="1" placeholder="Type your message..." oninput="onMsgInput(this.value);autoResize(this)" onkeydown="onMsgKeydown(event)">${state.editingMessageId?(state.messages.find(m=>m.id===state.editingMessageId)?.content||''):''}</textarea>
         <button onclick="sendMsg()">Send</button>
       </div>`;
   }
@@ -745,7 +755,7 @@ function renderChatArea(){
       <div class="messages" id="messages">${renderMessages()}</div>
       ${state.atBottom?'':`<button class="scroll-bottom-btn" id="scrollBottomBtn" onclick="scrollToBottom()">↓</button>`}
       <div class="msg-input">
-        <input type="text" id="msgText" placeholder="Type a DM..." onkeydown="if(event.key==='Enter')sendDMMsg()">
+        <textarea id="msgText" rows="1" placeholder="Type a DM..." oninput="autoResize(this)" onkeydown="onDMMsgKeydown(event)"></textarea>
         <button onclick="sendDMMsg()">Send</button>
       </div>`;
   }
@@ -764,6 +774,7 @@ function renderChatArea(){
 }
 
 function renderMessages(){
+  if(state.loadingMessages)return '<div style="color:var(--text-tertiary);text-align:center;padding:40px"><div style="display:inline-block;width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:8px"></div><div>Loading messages…</div></div>';
   if(!state.messages.length)return '<div style="color:var(--text-tertiary);text-align:center;padding:40px">No messages yet. Say howdy.</div>';
   const now=Date.now();
   return state.messages.map((m,i)=>{
@@ -1042,7 +1053,19 @@ async function loginExisting(){
 function saveUser(){localStorage.setItem('saloon-user',JSON.stringify(state.user))}
 function loadUser(){const s=localStorage.getItem('saloon-user');if(s){state.user=JSON.parse(s);state.view='app';return true}return false}
 
-async function loadGroups(){state.groups=await fetchMyGroups();for(const g of state.groups){state.channels[g.id]=await fetchChannels(g.id)}render()}
+async function loadGroups(){
+  state.groups=await fetchMyGroups();
+  for(const g of state.groups){
+    state.channels[g.id]=await fetchChannels(g.id);
+    // Fetch last message for preview
+    const chans=state.channels[g.id]||[];
+    if(chans.length>0){
+      const msgs=await fetchMessages(chans[0].id);
+      if(msgs.length>0)state.lastMessages[g.id]=msgs[msgs.length-1].content;
+    }
+  }
+  render();
+}
 
 async function selectGroup(groupId){
   state.activeGroup=groupId;state.activeChannel=null;state.activeDM=null;if(window.innerWidth<768)state.sidebarOpen=false;
@@ -1082,7 +1105,7 @@ async function selectDM(pubkey){
 
 async function sendDMMsg(){
   const input=document.getElementById('msgText');const text=input?.value.trim();
-  if(!text||!state.activeDM)return;input.value='';await sendDM(state.activeDM,text);
+  if(!text||!state.activeDM)return;input.value='';autoResize(input);await sendDM(state.activeDM,text);
 }
 
 function showCreateGroupModal(){state.showCreateGroupModal=true;state.createGroupModalMode='create';render()}
@@ -1092,11 +1115,35 @@ async function submitCreateGroup(){
   const name=document.getElementById('newGroupName')?.value.trim();if(!name)return;
   const about=document.getElementById('newGroupAbout')?.value||'';
   state.showCreateGroupModal=false;
+  // Show the saloon immediately in the sidebar
+  const tempId='pending-'+Date.now();
+  state.groups.push({id:tempId,name,about,pubkey:state.user.pk,channels:[]});
+  render(); // show saloon in sidebar right away
   createGroup(name,about).then(async id=>{
-    state.groups.push({id,name,about,pubkey:state.user.pk,channels:[]});
+    // Replace temp ID with real one
+    const g=state.groups.find(x=>x.id===tempId);
+    if(g)g.id=id;
     const chId=await createChannel(name,'general','General chat',id);
     state.channels[id]=[{id:chId,name:'general',about:'General chat'}];
-    selectChannel(id,chId);
+    // Immediately select the channel so the user sees it right away
+    state.activeGroup=id;
+    state.activeChannel=chId;
+    state.activeDM=null;
+    state.activeChannelName='general';
+    state.activeChannelDesc='General chat';
+    state.messages=[];
+    state.atBottom=true;
+    if(window.innerWidth<768)state.sidebarOpen=false;
+    render(); // show channel immediately
+    // Fetch messages, profiles, reactions in background
+    state.messages=await fetchMessages(chId);
+    await fetchMessageProfiles();
+    await fetchReactions(chId);
+    markRead(chId);
+    localStorage.removeItem('saloon-unread-'+chId);
+    subscribeMessages(chId);
+    subscribeTyping(chId);
+    render();
   });
 }
 async function submitJoinGroup(){
@@ -1219,8 +1266,16 @@ function onMsgInput(val){
   }
 }
 function onMsgKeydown(event){
-  if(event.key==='Enter'){sendMsg();return}
+  if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();return}
   if(event.key==='Escape'&&state.mentionQuery!==null){state.mentionQuery=null;render();const inp=document.getElementById('msgText');if(inp){inp.focus()}}
+}
+function onDMMsgKeydown(event){
+  if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendDMMsg();return}
+}
+function autoResize(el){
+  if(!el)return;
+  el.style.height='auto';
+  el.style.height=Math.min(el.scrollHeight,parseInt(getComputedStyle(el).maxHeight))+'px';
 }
 function insertMention(pubkey){
   const inp=document.getElementById('msgText');
@@ -1233,6 +1288,7 @@ function insertMention(pubkey){
   state.mentionQuery=null;
   inp.focus();
   inp.setSelectionRange(newVal.length,newVal.length);
+  autoResize(inp);
   onTyping();
 }
 
@@ -1241,7 +1297,7 @@ function startEdit(messageId){
   const msg=state.messages.find(m=>m.id===messageId);
   if(!msg)return;
   const inp=document.getElementById('msgText');
-  if(inp){inp.value=msg.content;inp.focus()}
+  if(inp){inp.value=msg.content;autoResize(inp);inp.focus()}
   state.editingMessageId=messageId;
 }
 function cancelEdit(){state.editingMessageId=null;const inp=document.getElementById('msgText');if(inp){inp.value='';inp.focus()}}
@@ -1251,10 +1307,10 @@ async function sendMsg(){
   const input=document.getElementById('msgText');const text=input?.value.trim();
   if(!text)return;
   if(state.editingMessageId){
-    input.value='';const id=state.editingMessageId;state.editingMessageId=null;
+    input.value='';autoResize(input);const id=state.editingMessageId;state.editingMessageId=null;
     await editMessage(state.activeChannel,id,text);
   } else {
-    if(!state.activeChannel)return;input.value='';await sendMessage(state.activeChannel,text);
+    if(!state.activeChannel)return;input.value='';autoResize(input);await sendMessage(state.activeChannel,text);
   }
 }
 
@@ -1273,17 +1329,46 @@ async function saveProfile(){
 
 async function fetchMessageProfiles(){
   const authors=new Set(state.messages.map(m=>m.author));
+  const unknown=[];
   for(const pk of authors){
     if(!state.profiles[pk]){
       if(pk===state.user.pk){state.profiles[pk]={name:state.user.name,about:state.user.about,picture:state.user.picture,link:state.user.link,isAgent:state.user.isAgent};continue}
-      const prof=await fetchProfile(pk);
-      state.profiles[pk]=prof||{};
+      unknown.push(pk);
     }
+  }
+  if(unknown.length===0)return;
+  await initPool();
+  // Batch all unknown pubkeys into a single pool.list() query
+  // nostr-tools supports multiple authors in a single filter
+  const events=await pool.list(RELAYS,[{kinds:[0],authors:unknown,limit:unknown.length}]);
+  const fetched=new Set();
+  for(const e of events){
+    try{
+      const prof=JSON.parse(e.content);
+      if(!state.profiles[e.pubkey]||Object.keys(state.profiles[e.pubkey]||{}).length===0){
+        state.profiles[e.pubkey]=prof;
+      }
+      fetched.add(e.pubkey);
+    }catch{}
+  }
+  // Fill empty profiles for pubkeys that returned nothing
+  for(const pk of unknown){
+    if(!fetched.has(pk)&&!state.profiles[pk])state.profiles[pk]={};
   }
 }
 
 // --- Init ---
 async function init(){
+  // Back button closes modals/sidebar before navigating away
+  window.addEventListener('popstate',()=>{
+    if(state.showProfile||state.viewingProfile||state.showCreateGroupModal||state.showCreateChannelModal||state.showNewDMModal||state.showSettingsModal){
+      state.showProfile=false;state.viewingProfile=null;state.showCreateGroupModal=false;state.showCreateChannelModal=false;state.showNewDMModal=false;state.showSettingsModal=false;render();
+      history.pushState(null,'',location.href);
+    } else if(state.sidebarOpen){
+      state.sidebarOpen=false;render();
+      history.pushState(null,'',location.href);
+    }
+  });
   if(loadUser()){
     render(); // show app instantly, empty groups
     loadGroups(); // fetch in background, will re-render when done
@@ -1301,7 +1386,7 @@ window.toggleSidebar=toggleSidebar;window.switchTab=switchTab;window.saveProfile
 window.openProfile=openProfile;window.closeProfile=closeProfile;
 window.viewProfile=viewProfile;window.closeViewProfile=closeViewProfile;window.startDM=startDM;
 window.logout=logout;window.onSearchInput=onSearchInput;window.onDMSearchInput=onDMSearchInput;
-window.onMsgInput=onMsgInput;window.onMsgKeydown=onMsgKeydown;window.insertMention=insertMention;
+window.onMsgInput=onMsgInput;window.onMsgKeydown=onMsgKeydown;window.onDMMsgKeydown=onDMMsgKeydown;window.autoResize=autoResize;window.insertMention=insertMention;
 window.scrollToBottom=scrollToBottom;window.toggleReaction=toggleReaction;
 window.startEdit=startEdit;window.deleteMessage=deleteMessage;
 window.showCreateGroupModal=showCreateGroupModal;window.closeCreateGroupModal=closeCreateGroupModal;
