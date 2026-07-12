@@ -69,6 +69,8 @@ body{
 .theme-toggle:hover{background:var(--bg-hover);color:var(--accent-bright)}
 .theme-toggle:active{transform:scale(.92)}
 .theme-toggle svg{width:18px;height:18px}
+[title]{position:relative}
+[title]:hover::after{content:attr(title);position:absolute;bottom:-28px;left:50%;transform:translateX(-50%);background:var(--bg-elevated);color:var(--text);padding:3px 8px;border-radius:4px;font-size:.75em;white-space:nowrap;z-index:100;border:1px solid var(--border);pointer-events:none}
 
 .profile-section{padding:12px 16px;border-bottom:1px solid var(--border)}
 .profile-section .pname{font-weight:600;font-size:.9em}
@@ -87,7 +89,7 @@ body{
 .group-item:hover{background:var(--bg-hover)}
 .group-item:active{transform:scale(.98)}
 .group-item.active{background:var(--bg-elevated);border-left:3px solid var(--accent);box-shadow:inset 0 1px 0 rgba(255,255,255,.03)}
-.group-item .gicon{font-size:1.1em}
+.group-item .gicon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.7em;font-weight:700;color:#fff}
 .group-item .gname{font-size:.9em;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .group-item .expand{font-size:.7em;color:var(--text-tertiary);transition:transform .2s ease}
 .group-item.active .expand{transform:rotate(0)}
@@ -619,7 +621,7 @@ function renderMain(){
       <div class="sidebar ${state.sidebarOpen?'mobile-open':''}">
         <div class="sidebar-header">
           <h1>The SaloonSpace</h1>
-          <button class="theme-toggle" onclick="toggleTheme()">${state.theme==='dark'?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'}</button>
+          <button class="theme-toggle" onclick="toggleTheme()" title="${state.theme==='dark'?'Light mode':'Dark mode'}" aria-label="Toggle theme">${state.theme==='dark'?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'}</button>
         </div>
         <div class="profile-section">
           <div style="display:flex;align-items:center;gap:10px;cursor:pointer" onclick="openProfile()">
@@ -628,7 +630,7 @@ function renderMain(){
               <div class="pname">${escapeHtml(state.user.name||'Anon')}</div>
               <div class="npub" style="cursor:pointer" onclick="event.stopPropagation();copyNpub()" title="Click to copy">${state.user.npub.slice(0,12)}…</div>
             </div>
-            <button onclick="event.stopPropagation();logout()" style="background:none;border:none;color:var(--text-tertiary);cursor:pointer;padding:6px;font-size:1.1em;flex-shrink:0" title="Logout">
+            <button onclick="event.stopPropagation();logout()" style="background:none;border:none;color:var(--text-tertiary);cursor:pointer;padding:6px;font-size:1.1em;flex-shrink:0" title="Logout" aria-label="Logout">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
             </button>
           </div>
@@ -657,7 +659,7 @@ function renderGroupsTab(){
         (state.channels[g.id]||[]).forEach(c=>{totalUnread+=getUnreadCount(c.id)});
         return `
         <div class="group-item ${state.activeGroup===g.id?'active':''}" onclick="selectGroup('${g.id}')">
-          <span class="gicon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+          <span class="gicon" style="background:${avatarBg(g.id)}">${escapeHtml(g.name.slice(0,2).toUpperCase())}</span>
           <span class="gname"><span class="saloon-name-link" onclick="event.stopPropagation();openSettings('${g.id}')">${escapeHtml(g.name)}</span></span>
           <span class="expand">${(state.channels[g.id]||[]).length>0?'▾':''}</span>
           ${totalUnread>0?`<span class="unread-dot"></span>`:''}
@@ -766,7 +768,7 @@ function renderMessages(){
       <div class="body">
         ${reactionBar}
         ${actionsHtml}
-        <div class="author"><span class="name" onclick="viewProfile('${m.author}')">${escapeHtml(name)}</span>${isAgent?'<span class="agent-tag">AGENT</span>':''}<span class="time">${m.time.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}${m.edited?' (edited)':''}</span></div>
+        <div class="author"><span class="name" onclick="viewProfile('${m.author}')">${escapeHtml(name)}</span>${isAgent?'<span class="agent-tag">AGENT</span>':''}<span class="time">${formatTime(m.time,prev?.time)}${m.edited?' (edited)':''}</span></div>
         <div class="content">${renderMarkdown(m.content)}</div>
         ${reactionsHtml}
       </div>
@@ -935,15 +937,26 @@ function renderMentionPopup(){
 // --- Actions ---
 function escapeHtml(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML}
 function avatarColor(pubkey){
-  // Generate consistent color from pubkey hash
   let hash=0;for(let i=0;i<pubkey.length;i++)hash=pubkey.charCodeAt(i)+((hash<<5)-hash);
   const h=Math.abs(hash)%360;
   return `hsl(${h},45%,35%)`;
 }
 function avatarBg(pubkey){
-  const c=avatarColor(pubkey);
   const h=Math.abs(pubkey.split('').reduce((a,c)=>a+c.charCodeAt(0),0))%360;
   return `linear-gradient(135deg, hsl(${h},45%,30%), hsl(${(h+30)%360},45%,40%))`;
+}
+function formatTime(date,prevDate){
+  const now=new Date();
+  const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const yesterday=new Date(today.getTime()-86400000);
+  const msgDay=new Date(date.getFullYear(),date.getMonth(),date.getDate());
+  const time=date.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  // Check if previous message was same day
+  const sameDayAsPrev=prevDate&&new Date(prevDate.getFullYear(),prevDate.getMonth(),prevDate.getDate()).getTime()===msgDay.getTime();
+  if(sameDayAsPrev)return time; // just time for subsequent messages same day
+  if(msgDay.getTime()===today.getTime())return 'Today at '+time;
+  if(msgDay.getTime()===yesterday.getTime())return 'Yesterday at '+time;
+  return date.toLocaleDateString([],{month:'short',day:'numeric'})+' at '+time;
 }
 
 async function createAccount(){const key=await generateKey();const name=document.getElementById('displayName')?.value||'';state.user={...key,name};saveUser();state.view='keybackup';render();loadGroups()}
