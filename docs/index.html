@@ -386,6 +386,7 @@ let state = {
   mentionQuery: null, atBottom: true,
   replyingTo: null, replyingToContent: null, showMembersPanel: false,
   channelSearchQuery: '', showChannelSearch: false, showSettingsPage: false,
+  lastMessageTimes: {}, // groupId -> timestamp (ms) of last message
 };
 const RELAYS = ['wss://relay.damus.io', 'wss://nos.lol', 'wss://relay.nostr.band'];
 let pool = null; let sub = null;
@@ -507,6 +508,89 @@ function playMessageSound(){
     messageSound.play().catch(()=>{});
   }catch(e){}
 }
+
+// --- Channel mute ---
+function isChannelMuted(channelId){
+  return localStorage.getItem('saloon-muted-'+channelId)==='1';
+}
+function toggleMuteChannel(channelId){
+  const key='saloon-muted-'+channelId;
+  if(localStorage.getItem(key)==='1'){
+    localStorage.removeItem(key);
+    showToast('Channel unmuted');
+  } else {
+    localStorage.setItem(key,'1');
+    showToast('Channel muted');
+  }
+  render();
+}
+
+// --- Browser notifications ---
+function requestNotificationPermission(){
+  if(!('Notification' in window))return;
+  if(Notification.permission==='default'){
+    Notification.requestPermission();
+  }
+}
+function showBrowserNotification(senderName, preview, channelId){
+  if(!('Notification' in window))return;
+  if(Notification.permission!=='granted')return;
+  if(isChannelMuted(channelId))return;
+  try{
+    const n=new Notification(senderName,{
+      body:preview.slice(0,50),
+      tag:'saloonspace-'+channelId,
+      icon:'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><text y="20" font-size="20">🤠</text></svg>')
+    });
+    n.onclick=function(){
+      window.focus();
+      this.close();
+    };
+  }catch(e){}
+}
+
+// --- Tab title badge ---
+function updateTabTitle(){
+  let total=0;
+  state.groups.forEach(g=>{
+    (state.channels[g.id]||[]).forEach(c=>{
+      if(!isChannelMuted(c.id))total+=getUnreadCount(c.id);
+    });
+  });
+  document.title=total>0?`(${total}) SaloonSpace`:'SaloonSpace';
+}
+
+// --- Update last message time for a group ---
+function updateLastMessageTime(channelId, timestamp){
+  // Find which group this channel belongs to
+  for(const g of state.groups){
+    const chans=state.channels[g.id]||[];
+    if(chans.find(c=>c.id===channelId)){
+      const ts=timestamp instanceof Date?timestamp.getTime():timestamp;
+      if(!state.lastMessageTimes[g.id]||ts>state.lastMessageTimes[g.id]){
+        state.lastMessageTimes[g.id]=ts;
+      }
+      break;
+    }
+  }
+}
+
+// --- Close all modals/panels (for Escape key) ---
+function closeAllModals(){
+  let closed=false;
+  if(state.showProfile){state.showProfile=false;closed=true}
+  if(state.viewingProfile){state.viewingProfile=null;closed=true}
+  if(state.showCreateGroupModal){state.showCreateGroupModal=false;closed=true}
+  if(state.showCreateChannelModal){state.showCreateChannelModal=false;closed=true}
+  if(state.showNewDMModal){state.showNewDMModal=false;closed=true}
+  if(state.showSettingsModal){state.showSettingsModal=false;closed=true}
+  if(state.showMembersPanel){state.showMembersPanel=false;closed=true}
+  if(state.showChannelSearch){state.showChannelSearch=false;state.channelSearchQuery='';closed=true}
+  if(state.view==='settings'){state.view='app';closed=true}
+  if(state.replyingTo){state.replyingTo=null;state.replyingToContent=null;closed=true}
+  if(state.mentionQuery!==null){state.mentionQuery=null;closed=true}
+  if(closed)render();
+}
 function subscribeMessages(channelId){
   if(sub)sub.unsub();
   initPool().then(()=>{
@@ -515,21 +599,34 @@ function subscribeMessages(channelId){
       // Deduplicate by event ID
       if(state.messages.some(m=>m.id===event.id))return;
       const replyTag=event.tags.find(t=>t[0]==='e'&&t[3]==='reply');
-      state.messages.push({id:event.id,content:event.content,author:event.pubkey,time:new Date(event.created_at*1000),isBot:false,replyTo:replyTag?replyTag[1]:null});
+      const msgTime=new Date(event.created_at*1000);
+      state.messages.push({id:event.id,content:event.content,author:event.pubkey,time:msgTime,isBot:false,replyTo:replyTag?replyTag[1]:null});
+      if(!state.lastMessageTimes)state.lastMessageTimes={};
+      state.lastMessageTimes[state.activeGroup]=event.created_at*1000;
+      updateLastMessageTime(channelId, msgTime);
       // Check for edit tags
       const editTag = event.tags.find(t=>t[0]==='edit');
       if(editTag){
         const orig = state.messages.find(m=>m.id===editTag[1]);
         if(orig){orig.content=event.content;orig.edited=true}
       }
+      const muted=isChannelMuted(channelId);
       // Smart auto-scroll
       if(state.atBottom){
         render();scrollMessages();
       } else {
-        incrementUnread(channelId);
-        playMessageSound();
+        if(!muted){
+          incrementUnread(channelId);
+          playMessageSound();
+        }
         render();
       }
+      // Browser notification when tab in background
+      if(document.hidden && !muted && channelId!==state.activeChannel){
+        const senderName=state.profiles[event.pubkey]?.name||event.pubkey.slice(0,8)+'…';
+        showBrowserNotification(senderName, event.content, channelId);
+      }
+      updateTabTitle();
     });
   });
 }
@@ -559,6 +656,12 @@ function pinMessage(messageId){
     showToast('Message pinned');
   }
   render();
+}
+function copyMessage(messageId){
+  const msg=state.messages.find(m=>m.id===messageId);
+  if(!msg)return;
+  navigator.clipboard.writeText(msg.content);
+  showToast('Message copied');
 }
 function renderPinnedMessage(){
   if(!state.activeChannel)return'';
@@ -683,8 +786,13 @@ function renderMarkdown(text) {
   s = s.replace(/\*([^*]+)\*/g, '<em>$1</em>');
   // Links [text](url)
   s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-  // Bare URLs
-  s = s.replace(/(?<!["\'>])(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+  // Bare URLs → link with favicon
+  s = s.replace(/(?<!["'>])(https?:\/\/[^\s<]+)/g, (match, url) => {
+    let domain;
+    try{domain=new URL(url).hostname}catch(e){domain=url}
+    const favicon='https://www.google.com/s2/favicons?domain='+domain+'&sz=32';
+    return `<a href="${url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;color:var(--accent-bright)"><img src="${favicon}" width="12" height="12" style="border-radius:2px" onerror="this.style.display='none'">${domain}</a>`;
+  });
   // npub1 mentions → clickable links
   s = s.replace(/npub1[023456789acdefghjklmnpqrstuvwxyz]{6,}/g, (match) => {
     try {
@@ -698,8 +806,16 @@ function renderMarkdown(text) {
   // Lists - item
   s = s.replace(/^- (.+)$/gm, '<li>$1</li>');
   s = s.replace(/(<li>[\s\S]*?<\/li>)/g, '<ul>$1</ul>');
-  // Restore code blocks
-  s = s.replace(/\u0000CB(\d+)\u0000/g, (m, i) => '<pre><code>'+codeBlocks[parseInt(i)]+'</code></pre>');
+  // Restore code blocks with basic syntax highlighting
+  s = s.replace(/\u0000CB(\d+)\u0000/g, (m, i) => {
+    let code=codeBlocks[parseInt(i)];
+    // Basic syntax highlighting
+    code=escapeHtml(code);
+    code=code.replace(/(\/\/.*$)/gm,'<span style="color:var(--text-tertiary)">$1</span>'); // comments
+    code=code.replace(/(['"`])((?:\\.|(?!\1).)*)\1/g,'<span style="color:var(--green)">$1$2$1</span>'); // strings
+    code=code.replace(/\b(const|let|var|function|return|if|else|for|while|class|import|export|from|async|await|new|try|catch|throw|typeof|instanceof)\b/g,'<span style="color:var(--accent-bright)">$1</span>'); // keywords
+    return '<pre><code>'+code+'</code></pre>';
+  });
   s = s.replace(/\u0000IC(\d+)\u0000/g, (m, i) => '<code>'+inlineCodes[parseInt(i)]+'</code>');
   return s;
 }
@@ -713,6 +829,7 @@ function markRead(channelId) {
   localStorage.removeItem('saloon-unread-'+channelId);
 }
 function getUnreadCount(channelId) {
+  if(isChannelMuted(channelId))return 0;
   if(state.activeChannel===channelId && state.atBottom)return 0;
   const lastRead = getLastRead(channelId);
   if(!state.messages.length)return 0;
@@ -790,6 +907,7 @@ function render(){
   app.innerHTML=html;
   setupScrollListener();
   if(state.activeChannel||state.activeDM)scrollMessages();
+  updateTabTitle();
 }
 
 function renderMain(){
@@ -827,8 +945,14 @@ function renderMain(){
 
 function renderGroupsTab(){
   const q = (state.searchQuery||'').toLowerCase();
-  let groups = state.groups;
+  let groups = state.groups.slice();
   if(q) groups = groups.filter(g=>g.name.toLowerCase().includes(q));
+  // Sort by recent activity (most recent first), keep active saloon pinned
+  groups.sort((a,b)=>{
+    const ta=state.lastMessageTimes?.[a.id]||0;
+    const tb=state.lastMessageTimes?.[b.id]||0;
+    return tb-ta;
+  });
   return `
     <div class="search-box"><input type="text" placeholder="Search saloons..." value="${escapeHtml(state.searchQuery)}" oninput="onSearchInput(this.value)"></div>
     <div class="groups-list">
@@ -978,7 +1102,7 @@ function renderMessages(){
       return `<span class="reaction-pill ${mine?'mine':''}" onclick="toggleReaction('${m.id}','${emoji}')">${emoji}<span class="count">${authors.length}</span></span>`;
     }).join('')}</div>`:'';
     // Action menu — Reply for all, Edit/Delete for own messages
-    const actionsHtml=`<div class="msg-actions"><button onclick="pinMessage('${m.id}')">Pin</button><button onclick="startReply('${m.id}')">Reply</button>${isOwn?`<button onclick="startEdit('${m.id}')">Edit</button><button onclick="deleteMessage('${m.id}')">Delete</button>`:''}</div>`;
+    const actionsHtml=`<div class="msg-actions"><button onclick="pinMessage('${m.id}')">Pin</button><button onclick="copyMessage('${m.id}')">Copy</button><button onclick="startReply('${m.id}')">Reply</button>${isOwn?`<button onclick="startEdit('${m.id}')">Edit</button><button onclick="deleteMessage('${m.id}')">Delete</button>`:''}</div>`;
     // Reaction bar (for all messages)
     const reactionBar=`<div class="reaction-bar"><button onclick="toggleReaction('${m.id}','👍')">👍</button><button onclick="toggleReaction('${m.id}','❤️')">❤️</button><button onclick="toggleReaction('${m.id}','😂')">😂</button><button onclick="toggleReaction('${m.id}','🤠')">🤠</button></div>`;
     // Reply quote — if this message is a reply, look up the original
@@ -1133,12 +1257,12 @@ function renderSettingsModal(){
     <div class="field"><label>Saloon name</label><input type="text" id="settingsGroupName" value="${escapeHtml(g.name)}"></div>
     <div class="field"><label>Description</label><textarea id="settingsGroupAbout" placeholder="About this saloon">${escapeHtml(g.about||'')}</textarea></div>
     <div class="field">
-      <label>Invite</label>
+      <label>Invite link</label>
       <div style="display:flex;align-items:center;gap:8px">
-        <input type="text" readonly value="${g.id}" style="flex:1;font-size:.8em;font-family:monospace;opacity:.7" onclick="this.select()">
-        <button class="create-btn" style="width:auto;padding:8px 12px" onclick="navigator.clipboard.writeText('${g.id}');showToast('Invite ID copied')">Copy</button>
+        <input type="text" readonly value="https://buckzz7.github.io/saloonspace/#join=${g.id}" style="flex:1;font-size:.75em;font-family:monospace;opacity:.7" onclick="this.select()">
+        <button class="create-btn" style="width:auto;padding:8px 12px" onclick="navigator.clipboard.writeText('https://buckzz7.github.io/saloonspace/#join=${g.id}');showToast('Invite link copied')">Copy</button>
       </div>
-      <div style="font-size:.75em;color:var(--text-tertiary);margin-top:4px">Share this ID so others can join via "+ New Saloon → Join"</div>
+      <div style="font-size:.75em;color:var(--text-tertiary);margin-top:4px">Share this link — others click it and auto-join your saloon</div>
     </div>
     <div class="field">
       <label>Tables (${channels.length})</label>
@@ -1339,7 +1463,11 @@ async function loadGroups(){
     const chans=state.channels[g.id]||[];
     if(chans.length>0){
       const msgs=await fetchMessages(chans[0].id);
-      if(msgs.length>0)state.lastMessages[g.id]=msgs[msgs.length-1].content;
+      if(msgs.length>0){
+        state.lastMessages[g.id]=msgs[msgs.length-1].content;
+        if(!state.lastMessageTimes)state.lastMessageTimes={};
+        state.lastMessageTimes[g.id]=msgs[msgs.length-1].time.getTime();
+      }
     }
   }
   render();
@@ -1429,8 +1557,10 @@ async function submitCreateGroup(){
 async function submitJoinGroup(){
   let id=document.getElementById('joinGroupId')?.value.trim();if(!id)return;
   state.showCreateGroupModal=false;
-  // Handle nevent1...
-  if(id.startsWith('nevent1')){try{const d=nip19.decode(id);id=d.data.id}catch(e){alert('Invalid event ID');return}}
+  await submitJoinGroupById(id);
+}
+async function submitJoinGroupById(id){
+  if(id.startsWith('nevent1')){try{const d=nip19.decode(id);id=d.data.id}catch(e){showToast('Invalid event ID');return}}
   const joined=JSON.parse(localStorage.getItem('saloon-joined')||'[]');
   if(!joined.includes(id)){joined.push(id);localStorage.setItem('saloon-joined',JSON.stringify(joined))}
   await loadGroups();render();
@@ -1780,9 +1910,24 @@ async function init(){
       history.pushState(null,'',location.href);
     }
   });
+  // Check for invite hash
+  const joinHash=location.hash.match(/join=([^&]+)/);
+  if(joinHash){
+    state.pendingJoinId=decodeURIComponent(joinHash[1]);
+    history.replaceState(null,'',location.pathname);
+  }
   if(loadUser()){
     render(); // show app instantly, empty groups
     loadGroups(); // fetch in background, will re-render when done
+    // Auto-join if pending
+    if(state.pendingJoinId){
+      setTimeout(()=>{
+        if(!state.groups.find(g=>g.id===state.pendingJoinId)){
+          submitJoinGroupById(state.pendingJoinId);
+        }
+        state.pendingJoinId=null;
+      },3000);
+    }
   } else {
     render();
   }
@@ -1799,7 +1944,7 @@ window.viewProfile=viewProfile;window.closeViewProfile=closeViewProfile;window.s
 window.logout=logout;window.onSearchInput=onSearchInput;window.onDMSearchInput=onDMSearchInput;
 window.onMsgInput=onMsgInput;window.onMsgKeydown=onMsgKeydown;window.onDMMsgKeydown=onDMMsgKeydown;window.autoResize=autoResize;window.insertMention=insertMention;
 window.scrollToBottom=scrollToBottom;window.toggleReaction=toggleReaction;
-window.startEdit=startEdit;window.deleteMessage=deleteMessage;window.pinMessage=pinMessage;
+window.startEdit=startEdit;window.deleteMessage=deleteMessage;window.pinMessage=pinMessage;window.copyMessage=copyMessage;
 window.showCreateGroupModal=showCreateGroupModal;window.closeCreateGroupModal=closeCreateGroupModal;
 window.setGroupModalMode=setGroupModalMode;window.submitCreateGroup=submitCreateGroup;
 window.submitJoinGroup=submitJoinGroup;
