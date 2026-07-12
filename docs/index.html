@@ -1775,7 +1775,7 @@ function renderSettingsModal(){
       <button class="save" onclick="submitSettings('${g.id}')">Save</button>
     </div>
     <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
-      <button onclick="leaveSaloon('${g.id}')" style="width:100%;padding:10px;color:var(--danger);background:none;border:1px solid var(--danger);border-radius:var(--radius-md);cursor:pointer;font-size:.88em;font-family:inherit;transition:all .15s ease">${g.pubkey===state.user.pk?'Delete saloon':'Leave saloon'}</button>
+      <button onclick="confirmLeaveSaloon('${g.id}','${g.pubkey===state.user.pk?'delete':'leave'}')" style="width:100%;padding:10px;color:var(--danger);background:none;border:1px solid var(--danger);border-radius:var(--radius-md);cursor:pointer;font-size:.88em;font-family:inherit;transition:all .15s ease">${g.pubkey===state.user.pk?'Delete saloon':'Leave saloon'}</button>
     </div>
   </div></div>`;
 }
@@ -2181,21 +2181,36 @@ function leaveSaloon(groupId){
   const g=state.groups.find(x=>x.id===groupId);
   if(!g)return;
   const isOwner=g.pubkey===state.user.pk;
-  const action=isOwner?'delete':'leave';
-  // Remove from state
   state.groups=state.groups.filter(x=>x.id!==groupId);
   delete state.channels[groupId];
-  // Remove from joined list
   const joined=JSON.parse(localStorage.getItem('saloon-joined')||'[]');
   const newJoined=joined.filter(id=>id!==groupId);
   localStorage.setItem('saloon-joined',JSON.stringify(newJoined));
-  // Clear active selection if needed
   if(state.activeGroup===groupId){
     state.activeGroup=null;state.activeChannel=null;state.activeChannelName='';state.activeChannelDesc='';
   }
   state.showSettingsModal=false;
   render();
   showToast(isOwner?'Saloon deleted':'Left saloon');
+}
+function confirmLeaveSaloon(groupId,action){
+  const btn=event.target;
+  if(btn.dataset.confirming==='yes'){
+    leaveSaloon(groupId);
+    return;
+  }
+  btn.dataset.confirming='yes';
+  btn.textContent=action==='delete'?'Click again to DELETE permanently':'Click again to LEAVE';
+  btn.style.background='var(--danger)';
+  btn.style.color='#fff';
+  setTimeout(()=>{
+    if(btn.dataset.confirming==='yes'){
+      btn.dataset.confirming='';
+      btn.textContent=action==='delete'?'Delete saloon':'Leave saloon';
+      btn.style.background='';
+      btn.style.color='var(--danger)';
+    }
+  },3000);
 }
 async function submitSettings(groupId){
   const name=document.getElementById('settingsGroupName')?.value||'';
@@ -2610,7 +2625,7 @@ window.showCreateChannelModal=showCreateChannelModal;window.closeCreateChannelMo
 window.submitCreateChannel=submitCreateChannel;window.removeChannel=removeChannel;
 window.showNewDMModal=showNewDMModal;window.closeNewDMModal=closeNewDMModal;
 window.submitNewDM=submitNewDM;
-window.openSettings=openSettings;window.closeSettingsModal=closeSettingsModal;window.leaveSaloon=leaveSaloon;
+window.openSettings=openSettings;window.closeSettingsModal=closeSettingsModal;window.leaveSaloon=leaveSaloon;window.confirmLeaveSaloon=confirmLeaveSaloon;
 window.submitSettings=submitSettings;
 window.showSaloonSettings=showSettingsModal;window.closeSaloonSettings=closeSettingsModal;
 window.saveSaloonSettings=submitSettings;window.removeChannelFromSaloon=removeChannel;
