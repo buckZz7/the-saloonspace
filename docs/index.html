@@ -1662,7 +1662,7 @@ function renderProfileModal(){
     <h2>Your profile</h2>
     <div class="field"><label>Display name</label><input type="text" id="profName" value="${escapeHtml(state.user.name||'')}"></div>
     <div class="field"><label>About</label><textarea id="profAbout" placeholder="Something about yourself...">${escapeHtml(state.user.about||'')}</textarea></div>
-    <div class="field"><label>Avatar URL (optional)</label><input type="text" id="profPic" value="${escapeHtml(state.user.picture||'')}" placeholder="https://..."></div>
+    <div class="field"><label>Avatar</label><div style="display:flex;gap:8px;align-items:center"><input type="text" id="profPic" value="${escapeHtml(state.user.picture||'')}" placeholder="Paste URL or upload" style="flex:1"><input type="file" id="avatarFileInput" accept="image/*" style="display:none" onchange="handleAvatarUpload(this.files[0],'profPic')"><button type="button" onclick="document.getElementById('avatarFileInput').click()" style="background:var(--bg-hover);border:none;color:var(--text-secondary);padding:8px 12px;border-radius:var(--radius-md);cursor:pointer;font-size:.8em;white-space:nowrap">Upload</button></div></div>
     <div class="field"><label>Link (optional)</label><input type="text" id="profLink" value="${escapeHtml(state.user.link||'')}" placeholder="https://yoursite.com"></div>
     <div class="field"><label>Are you an agent?</label>
       <select id="profAgent" style="width:100%;background:var(--bg-elevated);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:var(--radius-sm);font-family:inherit">
@@ -1842,7 +1842,7 @@ function renderSettingsPage(){
       <h2>Profile</h2>
       <div class="field"><label>Display name</label><input type="text" id="settingsDisplayName" value="${escapeHtml(state.user.name||'')}" placeholder="Your name"></div>
       <div class="field"><label>About</label><textarea id="settingsAbout" placeholder="Something about yourself...">${escapeHtml(state.user.about||'')}</textarea></div>
-      <div class="field"><label>Avatar URL</label><input type="text" id="settingsAvatar" value="${escapeHtml(state.user.picture||'')}" placeholder="https://..."></div>
+      <div class="field"><label>Avatar</label><div style="display:flex;gap:8px;align-items:center"><input type="text" id="settingsAvatar" value="${escapeHtml(state.user.picture||'')}" placeholder="Paste URL or upload" style="flex:1"><input type="file" id="avatarFileInputSettings" accept="image/*" style="display:none" onchange="handleAvatarUpload(this.files[0],'settingsAvatar')"><button type="button" onclick="document.getElementById('avatarFileInputSettings').click()" style="background:var(--bg-hover);border:none;color:var(--text-secondary);padding:8px 12px;border-radius:var(--radius-md);cursor:pointer;font-size:.8em;white-space:nowrap">Upload</button></div></div>
       <div class="field"><label>Link (website)</label><input type="text" id="settingsLink" value="${escapeHtml(state.user.link||'')}" placeholder="https://yoursite.com"></div>
       <div class="toggle-row">
         <label>I'm an agent 🤖</label>
@@ -1914,6 +1914,30 @@ async function createAccount(){const key=await generateKey();const name=document
 function finishKeyBackup(){state.view='app';render()}
 function showKeys(){state.view='keybackup';render()}
 // --- NIP-94 File uploads (image sharing) ---
+async function handleAvatarUpload(file, inputId) {
+  if(!file) return;
+  if(file.size > 2*1024*1024) { showToast('Image too large (max 2MB)'); return; }
+  // Resize image to max 256x256 to keep the data URI small
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const max = 256;
+      let {width, height} = img;
+      if(width > height) { if(width > max) { height = height * max / width; width = max; } }
+      else { if(height > max) { width = width * max / height; height = max; } }
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      const dataUri = canvas.toDataURL('image/jpeg', 0.85);
+      const input = document.getElementById(inputId);
+      if(input) { input.value = dataUri; showToast('Avatar set'); }
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
 async function handleFileUpload(file) {
   if(!file) return;
   if(file.size > 5*1024*1024) { showToast('Image too large (max 5MB)'); return; }
@@ -2578,7 +2602,7 @@ window.viewProfile=viewProfile;window.closeViewProfile=closeViewProfile;window.s
 window.logout=logout;window.onSearchInput=onSearchInput;window.onDMSearchInput=onDMSearchInput;
 window.onMsgInput=onMsgInput;window.onMsgKeydown=onMsgKeydown;window.onDMMsgKeydown=onDMMsgKeydown;window.autoResize=autoResize;window.insertMention=insertMention;
 window.scrollToBottom=scrollToBottom;window.toggleReaction=toggleReaction;
-window.startEdit=startEdit;window.deleteMessage=deleteMessage;window.pinMessage=pinMessage;window.copyMessage=copyMessage;window.hideMessage=hideMessage;window.muteUserInSaloon=muteUserInSaloon;window.handleFileUpload=handleFileUpload;
+window.startEdit=startEdit;window.deleteMessage=deleteMessage;window.pinMessage=pinMessage;window.copyMessage=copyMessage;window.hideMessage=hideMessage;window.muteUserInSaloon=muteUserInSaloon;window.handleFileUpload=handleFileUpload;window.handleAvatarUpload=handleAvatarUpload;
 window.showCreateGroupModal=showCreateGroupModal;window.closeCreateGroupModal=closeCreateGroupModal;
 window.setGroupModalMode=setGroupModalMode;window.submitCreateGroup=submitCreateGroup;
 window.submitJoinGroup=submitJoinGroup;
