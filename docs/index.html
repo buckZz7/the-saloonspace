@@ -286,11 +286,17 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 </style>
 </div>
 <script>
-// Show loader instantly. Load nostr-tools in background.
-import('https://cdn.jsdelivr.net/npm/nostr-tools@1.17.0/+esm').then(m => {
+// Load bundled nostr-tools from same origin — no CDN roundtrips.
+import('./nostr-bundle.js').then(m => {
   window.__NT = m;
   startApp();
-}).catch(e => { document.getElementById('app').innerHTML = '<div style="color:#c0392b;padding:40px;text-align:center">Failed to load: ' + e.message + '</div>'; });
+}).catch(e => {
+  // Fallback to CDN if local bundle fails
+  import('https://cdn.jsdelivr.net/npm/nostr-tools@1.17.0/+esm').then(m => {
+    window.__NT = m;
+    startApp();
+  }).catch(e2 => { document.getElementById('app').innerHTML = '<div style="color:#c0392b;padding:40px;text-align:center">Failed to load: ' + e2.message + '</div>'; });
+});
 
 function startApp() {
 const { generatePrivateKey, getPublicKey, finishEvent, SimplePool, nip19 } = window.__NT;
