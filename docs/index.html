@@ -638,9 +638,7 @@ function renderMain(){
           <div class="sidebar-tab ${state.sidebarTab==='dms'?'active':''}" onclick="switchTab('dms')">DMs</div>
         </div>
         ${state.sidebarTab==='groups'?renderGroupsTab():renderDMsTab()}
-        <div class="sidebar-footer">
-          ${state.sidebarTab==='groups'?'<button class="create-btn" onclick="showCreateGroupModal()">+ New Saloon</button>':'<button class="create-btn" onclick="showNewDMModal()">+ New DM</button>'}
-        </div>
+        ${state.sidebarTab==='groups'?(state.groups.length>0?'<div class="sidebar-footer"><button class="create-btn" onclick="showCreateGroupModal()">+ New Saloon</button></div>':''):(JSON.parse(localStorage.getItem('saloon-dms')||'[]').length>0?'<div class="sidebar-footer"><button class="create-btn" onclick="showNewDMModal()">+ New DM</button></div>':'')}
       </div>
       <div class="main" style="position:relative">${renderChatArea()}</div>
     </div>
@@ -730,8 +728,9 @@ function renderChatArea(){
       <div style="display:flex;align-items:center;justify-content:center;flex:1;color:var(--text-tertiary);padding:24px">
         <div style="text-align:center;max-width:320px">
           <div style="font-size:3em;margin-bottom:12px">🤠</div>
-          <div style="margin-bottom:8px">No saloon selected.</div>
-          <div style="font-size:.85em">Open the sidebar to pick one or create a new saloon.</div>
+          ${state.groups.length===0
+            ? '<div style="margin-bottom:8px">Create a saloon to get started.</div><div style="font-size:.85em">Your saloon is where the conversation happens.</div>'
+            : '<div style="margin-bottom:8px">Pick a saloon to start chatting.</div><div style="font-size:.85em">Select one from the sidebar.</div>'}
         </div>
       </div>
     </div>`;
