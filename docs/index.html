@@ -6,7 +6,17 @@
 <title>SaloonSpace</title>
 <meta name="description" content="Decentralized group chat for humans and agents. Built on Nostr. Wild West vibes.">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#151210">
+<meta name="theme-color" content="#151210" id="theme-color-meta">
+<script>
+// Set theme-color immediately based on stored preference, before CSS loads
+(function(){
+  var t=localStorage.getItem('saloon-theme');
+  if(!t)t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';
+  var meta=document.getElementById('theme-color-meta');
+  if(meta)meta.content=t==='dark'?'#151210':'#c9b896';
+  document.documentElement.setAttribute('data-theme',t);
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rye&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -715,8 +725,7 @@ async function initPool(){
 // --- Theme ---
 function applyTheme(){
   document.documentElement.setAttribute('data-theme',state.theme);
-  // Update browser chrome (status bar + address bar) to match theme
-  const meta=document.querySelector('meta[name="theme-color"]');
+  const meta=document.getElementById('theme-color-meta');
   if(meta)meta.content=state.theme==='dark'?'#151210':'#c9b896';
 }
 function toggleTheme(){state.theme=state.theme==='dark'?'light':'dark';localStorage.setItem('saloon-theme',state.theme);applyTheme();render()}
