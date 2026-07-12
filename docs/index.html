@@ -249,9 +249,9 @@ body{
 .sidebar-backdrop{display:none}
 @media(max-width:768px){
   .sidebar{display:none}
-  .sidebar.mobile-open{display:flex;position:fixed;top:0;left:0;bottom:0;z-index:200;height:100%;width:280px;box-shadow:var(--shadow-lg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);animation:sidebarSlide .3s cubic-bezier(.4,0,.2,1)}
+  .sidebar.mobile-open{display:flex;position:fixed;top:0;left:0;bottom:0;z-index:200;height:100%;width:280px;box-shadow:var(--shadow-lg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
   @keyframes sidebarSlide{from{transform:translateX(-100%)}to{transform:translateX(0)}}
-  .sidebar-backdrop.mobile-open{display:block;position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:150;animation:modalOverlay .2s ease}
+  .sidebar-backdrop.mobile-open{display:block;position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:150}
   .mobile-menu-btn{display:inline-block}
   .app{position:relative}
   .chat-header{padding-left:12px;padding-right:12px}
