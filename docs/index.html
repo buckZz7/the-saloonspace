@@ -115,6 +115,75 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .profile-modal .save{background:var(--accent);color:#000;border:none;font-weight:600}
 .profile-modal .cancel{background:transparent;color:var(--text-secondary);border:1px solid var(--border)}
 
+.search-box{padding:8px 12px;border-bottom:1px solid var(--border)}
+.search-box input{width:100%;background:var(--bg-elevated);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:6px;font-size:.85em;font-family:inherit}
+.search-box input:focus{outline:none;border-color:var(--accent)}
+
+.msg{margin-bottom:18px;display:flex;gap:10px;align-items:flex-start}
+.msg.grouped{margin-bottom:4px}
+.msg.grouped .avatar{visibility:hidden}
+.msg.grouped .author{display:none}
+
+.scroll-bottom-btn{position:absolute;bottom:72px;right:24px;width:40px;height:40px;border-radius:50%;background:var(--bg-elevated);border:1px solid var(--border);color:var(--accent-bright);font-size:1.2em;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.3);z-index:10}
+.scroll-bottom-btn:hover{background:var(--bg-hover)}
+
+.typing-indicator{padding:4px 20px;font-size:.8em;color:var(--text-tertiary);font-style:italic}
+
+.unread-badge{background:var(--danger);color:#fff;border-radius:10px;font-size:.65em;padding:1px 6px;font-weight:700;margin-left:auto}
+.unread-dot{width:8px;height:8px;background:var(--accent-bright);border-radius:50%;margin-left:auto;flex-shrink:0}
+
+.msg .msg-actions{position:absolute;right:0;top:-8px;display:none;background:var(--bg-elevated);border:1px solid var(--border);border-radius:4px;padding:2px}
+.msg:hover .msg-actions{display:flex}
+.msg .msg-actions button{background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:.8em;padding:2px 6px}
+.msg .msg-actions button:hover{color:var(--accent)}
+.msg .body{position:relative}
+
+.reaction-bar{display:none;position:absolute;top:-12px;right:0;background:var(--bg-elevated);border:1px solid var(--border);border-radius:16px;padding:2px 4px;gap:2px}
+.msg:hover .reaction-bar{display:flex}
+.reaction-bar button{background:none;border:none;font-size:.95em;cursor:pointer;padding:2px 4px;border-radius:4px}
+.reaction-bar button:hover{background:var(--bg-hover)}
+.reactions{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.reaction-pill{background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;padding:1px 8px;font-size:.75em;cursor:pointer;display:flex;align-items:center;gap:3px}
+.reaction-pill.mine{border-color:var(--accent);background:rgba(212,160,23,0.15)}
+.reaction-pill .count{color:var(--text-secondary);font-size:.85em}
+
+.mention-popup{position:absolute;bottom:56px;left:20px;right:20px;max-width:300px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.3);z-index:50;max-height:200px;overflow-y:auto}
+.mention-popup .item{padding:8px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
+.mention-popup .item:last-child{border-bottom:none}
+.mention-popup .item:hover{background:var(--bg-hover)}
+.mention-popup .item .avatar-sm{width:24px;height:24px;border-radius:50%;background:var(--bg-card);display:flex;align-items:center;justify-content:center;font-size:.7em;font-weight:600}
+
+.modal-form .field input,.modal-form .field textarea{width:100%;background:var(--bg-elevated);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:6px;font-family:inherit;font-size:.9em}
+.modal-form .field textarea{resize:vertical;min-height:50px}
+.modal-form .field label{display:block;font-size:.85em;color:var(--text-secondary);margin-bottom:4px}
+.modal-form .field{margin-bottom:12px;text-align:left}
+.modal-form .options{display:flex;gap:8px;margin-bottom:12px}
+.modal-form .options button{flex:1;padding:8px;border-radius:6px;cursor:pointer;font-family:inherit;font-size:.85em;border:1px solid var(--border);background:transparent;color:var(--text-secondary)}
+.modal-form .options button.active{border-color:var(--accent);color:var(--accent);background:var(--bg-elevated)}
+.modal-form .btns{display:flex;gap:8px;margin-top:16px}
+.modal-form .btns button{flex:1;padding:8px;border-radius:6px;cursor:pointer;font-family:inherit;font-size:.9em}
+.modal-form .save{background:var(--accent);color:#000;border:none;font-weight:600}
+.modal-form .cancel{background:transparent;color:var(--text-secondary);border:1px solid var(--border)}
+.modal-form .channel-list-item{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)}
+.modal-form .channel-list-item button{background:none;border:none;color:var(--danger);cursor:pointer;font-size:.85em}
+
+.logout-btn{background:none;border:1px solid var(--danger);color:var(--danger);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:.75em;font-family:inherit;margin-top:6px}
+.logout-btn:hover{background:var(--danger);color:#fff}
+
+.saloon-name-link{cursor:pointer}
+.saloon-name-link:hover{text-decoration:underline;color:var(--accent-bright)}
+
+.msg .content code{background:var(--bg-elevated);padding:1px 4px;border-radius:3px;font-family:monospace;font-size:.9em}
+.msg .content pre{background:var(--bg-elevated);padding:10px;border-radius:6px;overflow-x:auto;margin:4px 0}
+.msg .content pre code{background:none;padding:0}
+.msg .content blockquote{border-left:3px solid var(--border-light);padding-left:10px;margin:4px 0;color:var(--text-secondary)}
+.msg .content a{color:var(--accent-bright);text-decoration:none}
+.msg .content a:hover{text-decoration:underline}
+.msg .content ul{list-style:disc;padding-left:20px;margin:4px 0}
+.msg .content ol{list-style:decimal;padding-left:20px;margin:4px 0}
+.msg .content strong{font-weight:700}
+.msg .content em{font-style:italic}
+
 .mobile-menu-btn{display:none;background:none;border:1px solid var(--border);color:var(--text);font-size:1.1em;cursor:pointer;padding:4px 10px;border-radius:4px;margin-right:10px}
 .sidebar-backdrop{display:none}
 @media(max-width:768px){
@@ -147,6 +216,11 @@ let state = {
   sidebarOpen: false, showProfile: false, viewingProfile: null, dms: [], activeDM: null,
   profiles: {},
   theme: localStorage.getItem('saloon-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
+  searchQuery: '', dmSearchQuery: '',
+  showCreateGroupModal: false, showCreateChannelModal: false, showNewDMModal: false,
+  createGroupModalMode: 'create', showSettingsModal: false,
+  editingMessageId: null, reactions: {}, typingUsers: {},
+  mentionQuery: null, atBottom: true,
 };
 const RELAYS = ['wss://relay.damus.io', 'wss://nos.lol', 'wss://relay.nostr.band'];
 let pool = null; let sub = null;
@@ -229,12 +303,214 @@ function subscribeMessages(channelId){
     sub=pool.sub(RELAYS,[{kinds:[42],'#e':[channelId],limit:0,since:Math.floor(Date.now()/1000)}]);
     sub.on('event',(event)=>{
       state.messages.push({id:event.id,content:event.content,author:event.pubkey,time:new Date(event.created_at*1000),isBot:false});
-      render();scrollMessages();
+      // Check for edit tags
+      const editTag = event.tags.find(t=>t[0]==='edit');
+      if(editTag){
+        const orig = state.messages.find(m=>m.id===editTag[1]);
+        if(orig){orig.content=event.content;orig.edited=true}
+      }
+      // Smart auto-scroll
+      if(state.atBottom){
+        render();scrollMessages();
+      } else {
+        incrementUnread(channelId);
+        render();
+      }
     });
   });
 }
 
 function scrollMessages(){const el=document.getElementById('messages');if(el)el.scrollTop=el.scrollHeight}
+
+// --- Message editing (kind 42 with edit tag) ---
+async function editMessage(channelId, messageId, newText) {
+  await initPool();
+  const event = finishEvent({kind:42, content:newText, tags:[['e',channelId,RELAYS[0],'root'],['e',messageId,RELAYS[0],'reply'],['edit',messageId]], created_at:Math.floor(Date.now()/1000)}, state.user.sk);
+  try{await Promise.any(pool.publish(RELAYS,event))}catch(e){console.warn('publish',e)}
+  // Update local state
+  const msg = state.messages.find(m=>m.id===messageId);
+  if(msg){msg.content=newText;msg.edited=true}
+  render();
+}
+
+// --- Message deletion (kind 5) ---
+async function deleteMessage(messageId) {
+  await initPool();
+  const event = finishEvent({kind:5, content:'', tags:[['e',messageId]], created_at:Math.floor(Date.now()/1000)}, state.user.sk);
+  try{await Promise.any(pool.publish(RELAYS,event))}catch(e){console.warn('publish',e)}
+  state.messages = state.messages.filter(m=>m.id!==messageId);
+  render();
+}
+
+// --- Emoji reactions (kind 7) ---
+async function toggleReaction(messageId, emoji) {
+  await initPool();
+  const existing = (state.reactions[messageId]||[]).find(r=>r.emoji===emoji&&r.author===state.user.pk);
+  if(existing) {
+    // Delete our reaction (kind 5)
+    const delEvent = finishEvent({kind:5, content:'', tags:[['e',existing.id]], created_at:Math.floor(Date.now()/1000)}, state.user.sk);
+    try{await Promise.any(pool.publish(RELAYS,delEvent))}catch(e){console.warn('publish',e)}
+    state.reactions[messageId] = (state.reactions[messageId]||[]).filter(r=>r.id!==existing.id);
+  } else {
+    const event = finishEvent({kind:7, content:emoji, tags:[['e',messageId,RELAYS[0],'reply'],['p',state.user.pk]], created_at:Math.floor(Date.now()/1000)}, state.user.sk);
+    try{await Promise.any(pool.publish(RELAYS,event))}catch(e){console.warn('publish',e)}
+    if(!state.reactions[messageId])state.reactions[messageId]=[];
+    state.reactions[messageId].push({id:event.id,emoji,author:state.user.pk});
+  }
+  render();
+}
+
+async function fetchReactions(channelId) {
+  await initPool();
+  const events = await pool.list(RELAYS, [{kinds:[7], '#e':[channelId], limit:200}]);
+  const reacts = {};
+  for(const e of events) {
+    for(const t of e.tags) {
+      if(t[0]==='e'&&t[2]!=='root') {
+        if(!reacts[t[1]])reacts[t[1]]=[];
+        reacts[t[1]].push({id:e.id,emoji:e.content,author:e.pubkey});
+      }
+    }
+  }
+  state.reactions = reacts;
+}
+
+// --- Typing indicator (kind 1 with typing tag) ---
+let typingTimer = null;
+async function broadcastTyping(channelId) {
+  await initPool();
+  const event = finishEvent({kind:1, content:'', tags:[['typing','1'],['e',channelId,RELAYS[0],'root']], created_at:Math.floor(Date.now()/1000)}, state.user.sk);
+  try{await Promise.any(pool.publish(RELAYS,event))}catch(e){console.warn('publish',e)}
+}
+
+function onTyping() {
+  if(!state.activeChannel)return;
+  if(typingTimer){clearTimeout(typingTimer);typingTimer=null}
+  broadcastTyping(state.activeChannel);
+  typingTimer = setTimeout(()=>{typingTimer=null}, 3000);
+}
+
+function subscribeTyping(channelId) {
+  if(sub)sub.unsub();
+  initPool().then(()=>{
+    sub=pool.sub(RELAYS,[{kinds:[1], '#e':[channelId], limit:0, since:Math.floor(Date.now()/1000)}]);
+    sub.on('event',(event)=>{
+      if(event.tags.some(t=>t[0]==='typing')) {
+        const pubkey = event.pubkey;
+        if(pubkey===state.user.pk)return;
+        state.typingUsers[pubkey] = Date.now() + 3000;
+        renderTypingIndicator();
+      }
+    });
+  });
+}
+
+function renderTypingIndicator() {
+  const now = Date.now();
+  const active = Object.entries(state.typingUsers).filter(([_,t])=>t>now);
+  const el = document.getElementById('typingIndicator');
+  if(!el)return;
+  if(active.length===0){el.innerHTML='';el.style.display='none';return}
+  const names = active.map(([pk])=>state.profiles[pk]?.name||pk.slice(0,8)+'…');
+  el.style.display='block';
+  el.innerHTML = names.join(', ')+' '+(names.length===1?'is':'are')+' typing…';
+  setTimeout(renderTypingIndicator, 1000);
+}
+
+// --- Saloon settings (kind 41 metadata update) ---
+async function updateGroupMetadata(groupId, name, about) {
+  await initPool();
+  const event = finishEvent({kind:41, content:JSON.stringify({name, about, picture:'', relays:RELAYS}), tags:[['e',groupId,RELAYS[0],'root']], created_at:Math.floor(Date.now()/1000)}, state.user.sk);
+  try{await Promise.any(pool.publish(RELAYS,event))}catch(e){console.warn('publish',e)}
+  const g = state.groups.find(x=>x.id===groupId);
+  if(g){g.name=name;g.about=about}
+  render();
+}
+
+// --- Markdown renderer ---
+function renderMarkdown(text) {
+  let s = escapeHtml(text);
+  // Code blocks ```...```
+  const codeBlocks = [];
+  s = s.replace(/```([\s\S]*?)```/g, (m, code) => {
+    codeBlocks.push(code);
+    return `\u0000CB${codeBlocks.length-1}\u0000`;
+  });
+  // Inline code `code`
+  const inlineCodes = [];
+  s = s.replace(/`([^`]+)`/g, (m, code) => {
+    inlineCodes.push(code);
+    return `\u0000IC${inlineCodes.length-1}\u0000`;
+  });
+  // Bold **text**
+  s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  // Italic *text*
+  s = s.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+  // Links [text](url)
+  s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  // Bare URLs
+  s = s.replace(/(?<!["\'>])(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+  // npub1 mentions → clickable links
+  s = s.replace(/npub1[023456789acdefghjklmnpqrstuvwxyz]{6,}/g, (match) => {
+    try {
+      const dec = nip19.decode(match);
+      if(dec.type==='npub') return `<a href="#" onclick="viewProfile('${dec.data}');return false" style="color:var(--accent-bright)">@${state.profiles[dec.data]?.name||match.slice(0,10)+'…'}</a>`;
+    } catch(e) {}
+    return match;
+  });
+  // Quotes > text
+  s = s.replace(/^&gt;\s(.+)$/gm, '<blockquote>$1</blockquote>');
+  // Lists - item
+  s = s.replace(/^- (.+)$/gm, '<li>$1</li>');
+  s = s.replace(/(<li>[\s\S]*?<\/li>)/g, '<ul>$1</ul>');
+  // Restore code blocks
+  s = s.replace(/\u0000CB(\d+)\u0000/g, (m, i) => '<pre><code>'+codeBlocks[parseInt(i)]+'</code></pre>');
+  s = s.replace(/\u0000IC(\d+)\u0000/g, (m, i) => '<code>'+inlineCodes[parseInt(i)]+'</code>');
+  return s;
+}
+
+// --- Unread badges ---
+function getLastRead(channelId) {
+  return parseInt(localStorage.getItem('saloon-lastread-'+channelId)||'0');
+}
+function markRead(channelId) {
+  localStorage.setItem('saloon-lastread-'+channelId, String(Math.floor(Date.now()/1000)));
+}
+function getUnreadCount(channelId) {
+  if(state.activeChannel===channelId)return 0;
+  const lastRead = getLastRead(channelId);
+  if(!state.messages.length)return 0;
+  // We don't have per-channel messages cached, so use stored unread counts
+  return parseInt(localStorage.getItem('saloon-unread-'+channelId)||'0');
+}
+function incrementUnread(channelId) {
+  if(state.activeChannel===channelId)return;
+  const cur = parseInt(localStorage.getItem('saloon-unread-'+channelId)||'0');
+  localStorage.setItem('saloon-unread-'+channelId, String(cur+1));
+}
+
+// --- Scroll position tracking ---
+function isAtBottom() {
+  const el = document.getElementById('messages');
+  if(!el)return true;
+  return el.scrollHeight - el.scrollTop - el.clientHeight < 60;
+}
+function setupScrollListener() {
+  const el = document.getElementById('messages');
+  if(!el)return;
+  el.onscroll = () => {
+    state.atBottom = isAtBottom();
+    const btn = document.getElementById('scrollBottomBtn');
+    if(btn){btn.style.display = state.atBottom?'none':'flex'}
+  };
+}
+function scrollToBottom() {
+  const el = document.getElementById('messages');
+  if(el)el.scrollTop = el.scrollHeight;
+  state.atBottom = true;
+  const btn = document.getElementById('scrollBottomBtn');
+  if(btn)btn.style.display = 'none';
+}
 
 // --- DMs (NIP-17 lite: kind 4 direct messages for MVP) ---
 async function sendDM(pubkey,text){
@@ -258,10 +534,16 @@ function render(){
   applyTheme();
   if(state.view==='onboard'||!state.user){app.innerHTML=renderOnboard();return}
   if(state.view==='keybackup'){app.innerHTML=renderKeyBackup();return}
-  if(state.showProfile){app.innerHTML=renderMain()+renderProfileModal();return}
-  if(state.viewingProfile){app.innerHTML=renderMain()+renderViewProfileModal();return}
-  app.innerHTML=renderMain();
-  scrollMessages();
+  let html=renderMain();
+  if(state.showProfile)html+=renderProfileModal();
+  if(state.viewingProfile)html+=renderViewProfileModal();
+  if(state.showCreateGroupModal)html+=renderCreateGroupModal();
+  if(state.showCreateChannelModal)html+=renderCreateChannelModal();
+  if(state.showNewDMModal)html+=renderNewDMModal();
+  if(state.showSettingsModal)html+=renderSettingsModal();
+  app.innerHTML=html;
+  setupScrollListener();
+  if(state.activeChannel||state.activeDM)scrollMessages();
 }
 
 function renderMain(){
@@ -281,6 +563,7 @@ function renderMain(){
             <button class="create-btn" style="flex:1;" onclick="openProfile()">Profile</button>
             <button class="create-btn" style="flex:1;" onclick="showKeys()">Keys</button>
           </div>
+          <button class="logout-btn" onclick="logout()">Logout</button>
         </div>
         <div class="sidebar-tabs">
           <div class="sidebar-tab ${state.sidebarTab==='groups'?'active':''}" onclick="switchTab('groups')">Saloons</div>
@@ -288,43 +571,55 @@ function renderMain(){
         </div>
         ${state.sidebarTab==='groups'?renderGroupsTab():renderDMsTab()}
         <div class="sidebar-footer">
-          ${state.sidebarTab==='groups'?'<button class="create-btn" onclick="showCreateGroup()">+ New Saloon</button>':'<button class="create-btn" onclick="showNewDM()">+ New DM</button>'}
+          ${state.sidebarTab==='groups'?'<button class="create-btn" onclick="showCreateGroupModal()">+ New Saloon</button>':'<button class="create-btn" onclick="showNewDMModal()">+ New DM</button>'}
         </div>
       </div>
-      <div class="main">${renderChatArea()}</div>
+      <div class="main" style="position:relative">${renderChatArea()}</div>
     </div>
   `;
 }
 
 function renderGroupsTab(){
+  const q = (state.searchQuery||'').toLowerCase();
+  let groups = state.groups;
+  if(q) groups = groups.filter(g=>g.name.toLowerCase().includes(q));
   return `
+    <div class="search-box"><input type="text" placeholder="Search saloons..." value="${escapeHtml(state.searchQuery)}" oninput="onSearchInput(this.value)"></div>
     <div class="groups-list">
-      ${state.groups.map(g=>`
+      ${groups.map(g=>{
+        let totalUnread = 0;
+        (state.channels[g.id]||[]).forEach(c=>{totalUnread+=getUnreadCount(c.id)});
+        return `
         <div class="group-item ${state.activeGroup===g.id?'active':''}" onclick="selectGroup('${g.id}')">
           <span class="gicon">🤠</span>
-          <span class="gname">${escapeHtml(g.name)}</span>
+          <span class="gname"><span class="saloon-name-link" onclick="event.stopPropagation();openSettings('${g.id}')">${escapeHtml(g.name)}</span></span>
           <span class="expand">${(state.channels[g.id]||[]).length>0?'▾':''}</span>
+          ${totalUnread>0?`<span class="unread-dot"></span>`:''}
         </div>
         ${state.activeGroup===g.id&&state.channels[g.id]?renderChannels(g.id):''}
-      `).join('')||'<div style="padding:16px;color:var(--text-tertiary);font-size:.85em">No saloons yet. Create the first.</div>'}
+      `}).join('')||'<div style="padding:16px;color:var(--text-tertiary);font-size:.85em">No saloons found.</div>'}
     </div>
   `;
 }
 
 function renderChannels(groupId){
   const channels=state.channels[groupId]||[];
-  return `<div class="channels-list">${channels.map(c=>`
-    <div class="channel-item ${state.activeChannel===c.id?'active':''}" onclick="selectChannel('${groupId}','${c.id}')">${escapeHtml(c.name)}</div>
-  `).join('')}<div class="channel-item" style="color:var(--text-tertiary)" onclick="showCreateChannel('${groupId}')">+ add table</div></div>`;
+  return `<div class="channels-list">${channels.map(c=>{
+    const unread=getUnreadCount(c.id);
+    return `<div class="channel-item ${state.activeChannel===c.id?'active':''}" onclick="selectChannel('${groupId}','${c.id}')" style="display:flex;justify-content:space-between;align-items:center">${escapeHtml(c.name)}${unread>0?`<span class="unread-badge">${unread>99?'99+':unread}</span>`:''}</div>`;
+  }).join('')}<div class="channel-item" style="color:var(--text-tertiary)" onclick="showCreateChannelModal('${groupId}')">+ add table</div></div>`;
 }
 
 function renderDMsTab(){
   const dms=JSON.parse(localStorage.getItem('saloon-dms')||'[]');
-  return `<div class="dm-list">${dms.map(d=>`
+  const q=(state.dmSearchQuery||'').toLowerCase();
+  let filtered=dms;
+  if(q)filtered=dms.filter(d=>(d.name||d.npub||'').toLowerCase().includes(q));
+  return `<div class="search-box"><input type="text" placeholder="Search DMs..." value="${escapeHtml(state.dmSearchQuery)}" oninput="onDMSearchInput(this.value)"></div><div class="dm-list">${filtered.map(d=>`
     <div class="dm-item ${state.activeDM===d.pubkey?'active':''}" onclick="selectDM('${d.pubkey}')">
       <span>💬</span><span style="font-size:.9em">${escapeHtml(d.name||d.npub.slice(0,12))}</span>
     </div>
-  `).join('')||'<div style="padding:16px;color:var(--text-tertiary);font-size:.85em">No DMs yet.</div>'}</div>`;
+  `).join('')||'<div style="padding:16px;color:var(--text-tertiary);font-size:.85em">No DMs found.</div>'}</div>`;
 }
 
 function renderChatArea(){
@@ -338,8 +633,11 @@ function renderChatArea(){
         </div>
       </div>
       <div class="messages" id="messages">${renderMessages()}</div>
+      <div class="typing-indicator" id="typingIndicator" style="display:none"></div>
+      ${state.atBottom?'':`<button class="scroll-bottom-btn" id="scrollBottomBtn" onclick="scrollToBottom()">↓</button>`}
+      ${state.mentionQuery?renderMentionPopup():''}
       <div class="msg-input">
-        <input type="text" id="msgText" placeholder="Type your message..." onkeydown="if(event.key==='Enter')sendMsg()">
+        <input type="text" id="msgText" placeholder="Type your message..." oninput="onMsgInput(this.value)" onkeydown="onMsgKeydown(event)">
         <button onclick="sendMsg()">Send</button>
       </div>`;
   }
@@ -352,6 +650,7 @@ function renderChatArea(){
         </div>
       </div>
       <div class="messages" id="messages">${renderMessages()}</div>
+      ${state.atBottom?'':`<button class="scroll-bottom-btn" id="scrollBottomBtn" onclick="scrollToBottom()">↓</button>`}
       <div class="msg-input">
         <input type="text" id="msgText" placeholder="Type a DM..." onkeydown="if(event.key==='Enter')sendDMMsg()">
         <button onclick="sendDMMsg()">Send</button>
@@ -372,18 +671,37 @@ function renderChatArea(){
 
 function renderMessages(){
   if(!state.messages.length)return '<div style="color:var(--text-tertiary);text-align:center;padding:40px">No messages yet. Say howdy.</div>';
-  return state.messages.map(m=>{
+  const now=Date.now();
+  return state.messages.map((m,i)=>{
     const isOwn=m.author===state.user.pk;
     const name=isOwn?(state.user.name||'You'):(state.profiles[m.author]?.name||m.author.slice(0,8)+'…');
     const pic=state.profiles[m.author]?.picture;
     const isAgent=state.profiles[m.author]?.isAgent;
+    // Message grouping: same author within 5 min
+    const prev=state.messages[i-1];
+    const grouped=prev&&prev.author===m.author&&(m.time-prev.time)<300000&&!m.edited;
     const avatar=pic?`<div class="avatar"><img src="${escapeHtml(pic)}" onerror="this.style.display='none';this.parentElement.textContent='${escapeHtml(name[0]?.toUpperCase()||'?')}'"></div>`:`<div class="avatar">${escapeHtml(name[0]?.toUpperCase()||'?')}</div>`;
+    // Reactions
+    const reacts=(state.reactions[m.id]||[]);
+    const emojiCounts={};
+    reacts.forEach(r=>{emojiCounts[r.emoji]=(emojiCounts[r.emoji]||[]);emojiCounts[r.emoji].push(r.author)});
+    const reactionsHtml=Object.keys(emojiCounts).length>0?`<div class="reactions">${Object.entries(emojiCounts).map(([emoji,authors])=>{
+      const mine=authors.includes(state.user.pk);
+      return `<span class="reaction-pill ${mine?'mine':''}" onclick="toggleReaction('${m.id}','${emoji}')">${emoji}<span class="count">${authors.length}</span></span>`;
+    }).join('')}</div>`:'';
+    // Action menu for own messages
+    const actionsHtml=isOwn?`<div class="msg-actions"><button onclick="startEdit('${m.id}')">Edit</button><button onclick="deleteMessage('${m.id}')">Delete</button></div>`:'';
+    // Reaction bar (for all messages)
+    const reactionBar=`<div class="reaction-bar"><button onclick="toggleReaction('${m.id}','👍')">👍</button><button onclick="toggleReaction('${m.id}','❤️')">❤️</button><button onclick="toggleReaction('${m.id}','😂')">😂</button><button onclick="toggleReaction('${m.id}','🤠')">🤠</button></div>`;
     return `
-    <div class="msg">
+    <div class="msg ${grouped?'grouped':''}">
       ${avatar}
       <div class="body">
-        <div class="author"><span class="name" onclick="viewProfile('${m.author}')">${escapeHtml(name)}</span>${isAgent?'<span class="agent-tag">AGENT</span>':''}<span class="time">${m.time.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span></div>
-        <div class="content">${escapeHtml(m.content)}</div>
+        ${reactionBar}
+        ${actionsHtml}
+        <div class="author"><span class="name" onclick="viewProfile('${m.author}')">${escapeHtml(name)}</span>${isAgent?'<span class="agent-tag">AGENT</span>':''}<span class="time">${m.time.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}${m.edited?' (edited)':''}</span></div>
+        <div class="content">${renderMarkdown(m.content)}</div>
+        ${reactionsHtml}
       </div>
     </div>`;
   }).join('');
@@ -458,6 +776,95 @@ function renderViewProfileModal(){
   </div></div>`;
 }
 
+// --- Modal forms ---
+function renderCreateGroupModal(){
+  const mode=state.createGroupModalMode;
+  return `<div class="profile-modal"><div class="panel modal-form">
+    <h2>${mode==='create'?'Create Saloon':'Join Saloon'}</h2>
+    <div class="options">
+      <button class="${mode==='create'?'active':''}" onclick="setGroupModalMode('create')">Create New</button>
+      <button class="${mode==='join'?'active':''}" onclick="setGroupModalMode('join')">Join Existing</button>
+    </div>
+    ${mode==='create'?`
+      <div class="field"><label>Saloon name</label><input type="text" id="newGroupName" placeholder="The Watering Hole"></div>
+      <div class="field"><label>About (optional)</label><textarea id="newGroupAbout" placeholder="What's this saloon about?"></textarea></div>
+    `:`
+      <div class="field"><label>Saloon event ID</label><input type="text" id="joinGroupId" placeholder="Paste event ID or nevent1..."></div>
+    `}
+    <div class="btns">
+      <button class="cancel" onclick="closeCreateGroupModal()">Cancel</button>
+      <button class="save" onclick="${mode==='create'?'submitCreateGroup()':'submitJoinGroup()'}">${mode==='create'?'Create':'Join'}</button>
+    </div>
+  </div></div>`;
+}
+
+function renderCreateChannelModal(){
+  const groupId=state.showCreateChannelModal;
+  return `<div class="profile-modal"><div class="panel modal-form">
+    <h2>New Table</h2>
+    <div class="field"><label>Table name</label><input type="text" id="newChannelName" placeholder="general"></div>
+    <div class="field"><label>About (optional)</label><textarea id="newChannelAbout" placeholder="What's this table for?"></textarea></div>
+    <div class="btns">
+      <button class="cancel" onclick="closeCreateChannelModal()">Cancel</button>
+      <button class="save" onclick="submitCreateChannel()">Create</button>
+    </div>
+  </div></div>`;
+}
+
+function renderNewDMModal(){
+  return `<div class="profile-modal"><div class="panel modal-form">
+    <h2>New DM</h2>
+    <div class="field"><label>npub or pubkey</label><input type="text" id="newDMPubkey" placeholder="npub1..."></div>
+    <div class="field"><label>Name (optional)</label><input type="text" id="newDMName" placeholder="Their name"></div>
+    <div class="btns">
+      <button class="cancel" onclick="closeNewDMModal()">Cancel</button>
+      <button class="save" onclick="submitNewDM()">Start DM</button>
+    </div>
+  </div></div>`;
+}
+
+function renderSettingsModal(){
+  const g=state.groups.find(x=>x.id===state.showSettingsModal);
+  if(!g)return'';
+  const channels=state.channels[g.id]||[];
+  return `<div class="profile-modal"><div class="panel modal-form">
+    <h2>Saloon Settings</h2>
+    <div class="field"><label>Saloon name</label><input type="text" id="settingsGroupName" value="${escapeHtml(g.name)}"></div>
+    <div class="field"><label>Description</label><textarea id="settingsGroupAbout" placeholder="About this saloon">${escapeHtml(g.about||'')}</textarea></div>
+    <div class="field">
+      <label>Tables (${channels.length})</label>
+      ${channels.map(c=>`<div class="channel-list-item"><span># ${escapeHtml(c.name)}</span><button onclick="removeChannel('${g.id}','${c.id}')">Remove</button></div>`).join('')||'<div style="color:var(--text-tertiary);font-size:.85em">No tables</div>'}
+    </div>
+    <div class="btns">
+      <button class="cancel" onclick="closeSettingsModal()">Close</button>
+      <button class="save" onclick="submitSettings('${g.id}')">Save</button>
+    </div>
+  </div></div>`;
+}
+
+function renderMentionPopup(){
+  const q=state.mentionQuery;
+  const allPks=new Set();
+  // From profiles cache
+  Object.keys(state.profiles).forEach(pk=>allPks.add(pk));
+  // From DM contacts
+  const dms=JSON.parse(localStorage.getItem('saloon-dms')||'[]');
+  dms.forEach(d=>allPks.add(d.pubkey));
+  // Add own
+  allPks.add(state.user.pk);
+  const filtered=[...allPks].filter(pk=>{
+    if(pk===state.user.pk)return false;
+    const name=state.profiles[pk]?.name||pk.slice(0,8);
+    return name.toLowerCase().includes(q.toLowerCase());
+  }).slice(0,8);
+  if(filtered.length===0)return'';
+  return `<div class="mention-popup" id="mentionPopup">${filtered.map(pk=>{
+    const name=state.profiles[pk]?.name||pk.slice(0,8)+'…';
+    const pic=state.profiles[pk]?.picture;
+    return `<div class="item" onclick="insertMention('${pk}')">${pic?`<img src="${escapeHtml(pic)}" style="width:24px;height:24px;border-radius:50%;object-fit:cover">`:`<div class="avatar-sm">${escapeHtml(name[0]?.toUpperCase()||'?')}</div>`}<span>${escapeHtml(name)}</span></div>`;
+  }).join('')}</div>`;
+}
+
 // --- Actions ---
 function escapeHtml(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML}
 
@@ -497,11 +904,17 @@ async function selectGroup(groupId){
 
 async function selectChannel(groupId,channelId){
   state.activeGroup=groupId;state.activeChannel=channelId;state.activeDM=null;state.sidebarOpen=false;
+  state.atBottom=true;
   const ch=(state.channels[groupId]||[]).find(c=>c.id===channelId);
   state.activeChannelName=ch?.name||'general';state.activeChannelDesc=ch?.about||'';
   state.messages=await fetchMessages(channelId);
   await fetchMessageProfiles();
-  subscribeMessages(channelId);render();
+  await fetchReactions(channelId);
+  markRead(channelId);
+  localStorage.removeItem('saloon-unread-'+channelId);
+  subscribeMessages(channelId);
+  subscribeTyping(channelId);
+  render();
 }
 
 async function selectDM(pubkey){
@@ -511,51 +924,81 @@ async function selectDM(pubkey){
   state.messages=await fetchDMs(pubkey);render();
 }
 
-async function sendMsg(){
-  const input=document.getElementById('msgText');const text=input?.value.trim();
-  if(!text||!state.activeChannel)return;input.value='';await sendMessage(state.activeChannel,text);
-}
-
 async function sendDMMsg(){
   const input=document.getElementById('msgText');const text=input?.value.trim();
   if(!text||!state.activeDM)return;input.value='';await sendDM(state.activeDM,text);
 }
 
-function showCreateGroup(){
-  const name=prompt('Saloon name:');if(!name)return;
-  const about=prompt("What's this saloon about?")||'';
+function showCreateGroupModal(){state.showCreateGroupModal=true;state.createGroupModalMode='create';render()}
+function closeCreateGroupModal(){state.showCreateGroupModal=false;render()}
+function setGroupModalMode(mode){state.createGroupModalMode=mode;render()}
+async function submitCreateGroup(){
+  const name=document.getElementById('newGroupName')?.value.trim();if(!name)return;
+  const about=document.getElementById('newGroupAbout')?.value||'';
+  state.showCreateGroupModal=false;
   createGroup(name,about).then(async id=>{
     state.groups.push({id,name,about,pubkey:state.user.pk,channels:[]});
-    // Create a default 'general' table
     const chId=await createChannel(name,'general','General chat',id);
     state.channels[id]=[{id:chId,name:'general',about:'General chat'}];
     selectChannel(id,chId);
   });
 }
+async function submitJoinGroup(){
+  let id=document.getElementById('joinGroupId')?.value.trim();if(!id)return;
+  state.showCreateGroupModal=false;
+  // Handle nevent1...
+  if(id.startsWith('nevent1')){try{const d=nip19.decode(id);id=d.data.id}catch(e){alert('Invalid event ID');return}}
+  const joined=JSON.parse(localStorage.getItem('saloon-joined')||'[]');
+  if(!joined.includes(id)){joined.push(id);localStorage.setItem('saloon-joined',JSON.stringify(joined))}
+  await loadGroups();render();
+}
 
-function showCreateChannel(groupId){
-  const name=prompt('Table name:');if(!name)return;
-  const about=prompt("What's this table for?")||'';
+function showCreateChannelModal(groupId){state.showCreateChannelModal=groupId;render()}
+function closeCreateChannelModal(){state.showCreateChannelModal=false;render()}
+async function submitCreateChannel(){
+  const groupId=state.showCreateChannelModal;
+  const name=document.getElementById('newChannelName')?.value.trim();if(!name)return;
+  const about=document.getElementById('newChannelAbout')?.value||'';
   const g=state.groups.find(x=>x.id===groupId);
+  state.showCreateChannelModal=false;
   createChannel(g?.name||'',name,about,groupId).then(id=>{
     if(!state.channels[groupId])state.channels[groupId]=[];
     state.channels[groupId].push({id,name,about});
     selectChannel(groupId,id);
   });
 }
-
-function showNewDM(){
-  const npub=prompt("Enter their npub (npub1...):");if(!npub)return;
-  let pubkey;
-  try{const d=nip19.decode(npub);pubkey=d.data}catch(e){pubkey=npub}
-  const name=prompt('Name (optional):')||'';
-  const dms=JSON.parse(localStorage.getItem('saloon-dms')||'[]');
-  dms.push({pubkey,name: name||npub.slice(0,16)});
-  localStorage.setItem('saloon-dms',JSON.stringify(dms));
-  state.dms=dms;selectDM(pubkey);
+function removeChannel(groupId,channelId){
+  if(!confirm('Remove this table?'))return;
+  if(state.channels[groupId])state.channels[groupId]=state.channels[groupId].filter(c=>c.id!==channelId);
+  render();
 }
 
-function showKeys(){state.view='keybackup';render()}
+function showNewDMModal(){state.showNewDMModal=true;render()}
+function closeNewDMModal(){state.showNewDMModal=false;render()}
+function submitNewDM(){
+  const npub=document.getElementById('newDMPubkey')?.value.trim();if(!npub)return;
+  let pubkey;
+  try{const d=nip19.decode(npub);pubkey=d.data}catch(e){pubkey=npub}
+  const name=document.getElementById('newDMName')?.value||'';
+  const dms=JSON.parse(localStorage.getItem('saloon-dms')||'[]');
+  dms.push({pubkey,name:name||npub.slice(0,16)});
+  localStorage.setItem('saloon-dms',JSON.stringify(dms));
+  state.dms=dms;state.showNewDMModal=false;selectDM(pubkey);
+}
+
+function showSettingsModal(){state.showSettingsModal=true;render()}
+function openSettings(groupId){state.showSettingsModal=groupId;render()}
+function closeSettingsModal(){state.showSettingsModal=false;render()}
+async function submitSettings(groupId){
+  const name=document.getElementById('settingsGroupName')?.value||'';
+  const about=document.getElementById('settingsGroupAbout')?.value||'';
+  state.showSettingsModal=false;
+  await updateGroupMetadata(groupId,name,about);
+}
+
+function showCreateGroup(){showCreateGroupModal()}
+function showCreateChannel(groupId){showCreateChannelModal(groupId)}
+function showNewDM(){showNewDMModal()}
 
 function openProfile(){state.showProfile=true;render()}
 function closeProfile(){state.showProfile=false;render()}
@@ -581,6 +1024,79 @@ function startDM(pubkey){
   }
   state.sidebarTab='dms';
   selectDM(pubkey);
+}
+
+// --- Logout ---
+function logout(){
+  if(!confirm('Logout? This clears local data. Make sure you saved your nsec!'))return;
+  localStorage.removeItem('saloon-user');
+  localStorage.removeItem('saloon-joined');
+  localStorage.removeItem('saloon-dms');
+  location.reload();
+}
+
+// --- Search ---
+function onSearchInput(val){state.searchQuery=val;render();const el=document.querySelector('.search-box input');if(el){el.focus();el.setSelectionRange(val.length,val.length)}}
+function onDMSearchInput(val){state.dmSearchQuery=val;render();const el=document.querySelector('.search-box input');if(el){el.focus();el.setSelectionRange(val.length,val.length)}}
+
+// --- Mentions ---
+function onMsgInput(val){
+  // Typing indicator
+  onTyping();
+  // Mention detection
+  const lastChar=val[val.length-1];
+  if(lastChar==='@'){
+    state.mentionQuery='';render();
+    const inp=document.getElementById('msgText');if(inp){inp.focus();inp.setSelectionRange(val.length,val.length)}
+  } else {
+    const atIdx=val.lastIndexOf('@');
+    if(atIdx>=0){
+      const query=val.substring(atIdx+1);
+      if(query.length<=20&&!query.includes(' ')){
+        state.mentionQuery=query;render();
+        const inp=document.getElementById('msgText');if(inp){inp.focus();inp.setSelectionRange(val.length,val.length)}
+        return;
+      }
+    }
+    if(state.mentionQuery!==null){state.mentionQuery=null;render();
+      const inp=document.getElementById('msgText');if(inp){inp.focus();inp.setSelectionRange(val.length,val.length)}}
+  }
+}
+function onMsgKeydown(event){
+  if(event.key==='Enter'){sendMsg();return}
+  if(event.key==='Escape'&&state.mentionQuery!==null){state.mentionQuery=null;render();const inp=document.getElementById('msgText');if(inp){inp.focus()}}
+}
+function insertMention(pubkey){
+  const inp=document.getElementById('msgText');
+  if(!inp)return;
+  const val=inp.value;
+  const atIdx=val.lastIndexOf('@');
+  const npub=npubEncode(pubkey);
+  const newVal=val.substring(0,atIdx)+npub+' ';
+  inp.value=newVal;
+  state.mentionQuery=null;
+  inp.focus();
+  inp.setSelectionRange(newVal.length,newVal.length);
+  onTyping();
+}
+
+// --- Edit message ---
+function startEdit(messageId){
+  const msg=state.messages.find(m=>m.id===messageId);
+  if(!msg)return;
+  const inp=document.getElementById('msgText');
+  if(inp){inp.value=msg.content;inp.focus()}
+  state.editingMessageId=messageId;
+}
+async function sendMsg(){
+  const input=document.getElementById('msgText');const text=input?.value.trim();
+  if(!text)return;
+  if(state.editingMessageId){
+    input.value='';const id=state.editingMessageId;state.editingMessageId=null;
+    await editMessage(state.activeChannel,id,text);
+  } else {
+    if(!state.activeChannel)return;input.value='';await sendMessage(state.activeChannel,text);
+  }
 }
 
 async function saveProfile(){
@@ -621,6 +1137,20 @@ window.finishKeyBackup=finishKeyBackup;window.showKeys=showKeys;window.copyNsec=
 window.toggleSidebar=toggleSidebar;window.switchTab=switchTab;window.saveProfile=saveProfile;
 window.openProfile=openProfile;window.closeProfile=closeProfile;
 window.viewProfile=viewProfile;window.closeViewProfile=closeViewProfile;window.startDM=startDM;
+window.logout=logout;window.onSearchInput=onSearchInput;window.onDMSearchInput=onDMSearchInput;
+window.onMsgInput=onMsgInput;window.onMsgKeydown=onMsgKeydown;window.insertMention=insertMention;
+window.scrollToBottom=scrollToBottom;window.toggleReaction=toggleReaction;
+window.startEdit=startEdit;window.deleteMessage=deleteMessage;
+window.showCreateGroupModal=showCreateGroupModal;window.closeCreateGroupModal=closeCreateGroupModal;
+window.setGroupModalMode=setGroupModalMode;window.submitCreateGroup=submitCreateGroup;
+window.submitJoinGroup=submitJoinGroup;
+window.showCreateChannelModal=showCreateChannelModal;window.closeCreateChannelModal=closeCreateChannelModal;
+window.submitCreateChannel=submitCreateChannel;window.removeChannel=removeChannel;
+window.showNewDMModal=showNewDMModal;window.closeNewDMModal=closeNewDMModal;
+window.submitNewDM=submitNewDM;
+window.openSettings=openSettings;window.closeSettingsModal=closeSettingsModal;
+window.submitSettings=submitSettings;
+window.copyNpub=copyNpub;
 
 init();
 } // end startApp
