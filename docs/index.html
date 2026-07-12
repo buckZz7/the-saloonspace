@@ -197,44 +197,42 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 </head>
 <body>
 <div id="app"><div id="loader" style="position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg);z-index:9999">
-  <div id="saloonDoors" style="position:relative;width:240px;height:360px;perspective:1000px">
+  <div id="saloonDoors" style="position:relative;width:280px;height:120px;perspective:1000px">
     <!-- Warm glow behind doors -->
-    <div style="position:absolute;inset:-30px;background:radial-gradient(ellipse at center,rgba(212,160,23,0.25) 0%,rgba(212,160,23,0) 65%);border-radius:50%;animation:glow 2s ease-in-out infinite;pointer-events:none"></div>
-    <!-- Left door -->
-    <svg id="leftDoor" style="position:absolute;left:0;top:0;width:50%;height:100%;transform-origin:left center;animation:swingLeft 2s ease-in-out infinite" viewBox="0 0 120 360">
-      <!-- Frame with arched top -->
-      <path d="M 4,356 L 4,80 A 56,56 0 0 1 116,80 L 116,356 Z" fill="#8B5A2B" stroke="#3E2723" stroke-width="3"/>
-      <!-- Arched window pane -->
-      <path d="M 16,80 A 44,44 0 0 1 104,80 L 104,120 L 16,120 Z" fill="#D2691E" stroke="#3E2723" stroke-width="2"/>
-      <!-- Horizontal slats -->
-      <g fill="#FFD700" stroke="#3E2723" stroke-width="1.5">
-        <path d="M 14,140 L 106,140 L 110,162 L 10,162 Z"/>
-        <path d="M 14,168 L 106,168 L 110,190 L 10,190 Z"/>
-        <path d="M 14,196 L 106,196 L 110,218 L 10,218 Z"/>
-        <path d="M 14,224 L 106,224 L 110,246 L 10,246 Z"/>
-        <path d="M 14,252 L 106,252 L 110,274 L 10,274 Z"/>
-        <path d="M 14,280 L 106,280 L 110,302 L 10,302 Z"/>
-        <path d="M 14,308 L 106,308 L 110,330 L 10,330 Z"/>
-        <path d="M 14,336 L 106,336 L 110,354 L 10,354 Z"/>
-      </g>
-      <!-- Doorknob -->
-      <circle cx="104" cy="200" r="5" fill="#FFD700" stroke="#3E2723" stroke-width="1.5"/>
+    <div style="position:absolute;inset:-20px;background:radial-gradient(ellipse at center,rgba(212,160,23,0.25) 0%,rgba(212,160,23,0) 65%);border-radius:50%;animation:glow 2s ease-in-out infinite;pointer-events:none"></div>
+    <!-- Left door — wide and short, flat top, hinges on left -->
+    <svg id="leftDoor" style="position:absolute;left:0;top:0;width:50%;height:100%;transform-origin:left center;animation:swingLeft 2s ease-in-out infinite" viewBox="0 0 140 120">
+      <!-- Hinge strip -->
+      <rect x="0" y="4" width="10" height="112" rx="2" fill="#D4A017" stroke="#3E2723" stroke-width="1.5"/>
+      <!-- Frame -->
+      <path d="M 8,4 L 134,4 L 134,116 L 8,116 Z" fill="#E69A3D" stroke="#3E2723" stroke-width="2"/>
+      <!-- Inner panel — horizontal planks -->
+      <rect x="14" y="10" width="114" height="100" rx="3" fill="#B5651D" stroke="#3E2723" stroke-width="1.5"/>
+      <!-- Plank lines -->
+      <line x1="14" y1="35" x2="128" y2="35" stroke="#8B4513" stroke-width="1.5"/>
+      <line x1="14" y1="60" x2="128" y2="60" stroke="#8B4513" stroke-width="1.5"/>
+      <line x1="14" y1="85" x2="128" y2="85" stroke="#8B4513" stroke-width="1.5"/>
+      <!-- Wood grain — wavy lines -->
+      <path d="M 20,22 Q 40,18 60,22 T 100,22 T 125,22" fill="none" stroke="#8B4513" stroke-width="1" opacity=".6"/>
+      <path d="M 20,47 Q 45,43 70,47 T 115,47" fill="none" stroke="#8B4513" stroke-width="1" opacity=".6"/>
+      <path d="M 20,72 Q 40,68 65,72 T 110,72" fill="none" stroke="#8B4513" stroke-width="1" opacity=".6"/>
+      <path d="M 20,97 Q 50,93 75,97 T 120,97" fill="none" stroke="#8B4513" stroke-width="1" opacity=".6"/>
+      <!-- Wood knot -->
+      <ellipse cx="80" cy="48" rx="4" ry="3" fill="#8B4513" opacity=".5"/>
     </svg>
-    <!-- Right door -->
-    <svg id="rightDoor" style="position:absolute;right:0;top:0;width:50%;height:100%;transform-origin:right center;animation:swingRight 2s ease-in-out infinite" viewBox="0 0 120 360">
-      <path d="M 4,356 L 4,80 A 56,56 0 0 0 116,80 L 116,356 Z" fill="#8B5A2B" stroke="#3E2723" stroke-width="3"/>
-      <path d="M 16,80 A 44,44 0 0 0 104,80 L 104,120 L 16,120 Z" fill="#D2691E" stroke="#3E2723" stroke-width="2"/>
-      <g fill="#FFD700" stroke="#3E2723" stroke-width="1.5">
-        <path d="M 14,140 L 106,140 L 110,162 L 10,162 Z"/>
-        <path d="M 14,168 L 106,168 L 110,190 L 10,190 Z"/>
-        <path d="M 14,196 L 106,196 L 110,218 L 10,218 Z"/>
-        <path d="M 14,224 L 106,224 L 110,246 L 10,246 Z"/>
-        <path d="M 14,252 L 106,252 L 110,274 L 10,274 Z"/>
-        <path d="M 14,280 L 106,280 L 110,302 L 10,302 Z"/>
-        <path d="M 14,308 L 106,308 L 110,330 L 10,330 Z"/>
-        <path d="M 14,336 L 106,336 L 110,354 L 10,354 Z"/>
-      </g>
-      <circle cx="16" cy="200" r="5" fill="#FFD700" stroke="#3E2723" stroke-width="1.5"/>
+    <!-- Right door — mirror -->
+    <svg id="rightDoor" style="position:absolute;right:0;top:0;width:50%;height:100%;transform-origin:right center;animation:swingRight 2s ease-in-out infinite" viewBox="0 0 140 120">
+      <rect x="130" y="4" width="10" height="112" rx="2" fill="#D4A017" stroke="#3E2723" stroke-width="1.5"/>
+      <path d="M 6,4 L 132,4 L 132,116 L 6,116 Z" fill="#E69A3D" stroke="#3E2723" stroke-width="2"/>
+      <rect x="12" y="10" width="114" height="100" rx="3" fill="#B5651D" stroke="#3E2723" stroke-width="1.5"/>
+      <line x1="12" y1="35" x2="126" y2="35" stroke="#8B4513" stroke-width="1.5"/>
+      <line x1="12" y1="60" x2="126" y2="60" stroke="#8B4513" stroke-width="1.5"/>
+      <line x1="12" y1="85" x2="126" y2="85" stroke="#8B4513" stroke-width="1.5"/>
+      <path d="M 15,22 Q 40,18 65,22 T 105,22 T 125,22" fill="none" stroke="#8B4513" stroke-width="1" opacity=".6"/>
+      <path d="M 15,47 Q 40,43 70,47 T 115,47" fill="none" stroke="#8B4513" stroke-width="1" opacity=".6"/>
+      <path d="M 15,72 Q 45,68 70,72 T 110,72" fill="none" stroke="#8B4513" stroke-width="1" opacity=".6"/>
+      <path d="M 15,97 Q 45,93 75,97 T 120,97" fill="none" stroke="#8B4513" stroke-width="1" opacity=".6"/>
+      <ellipse cx="55" cy="72" rx="4" ry="3" fill="#8B4513" opacity=".5"/>
     </svg>
   </div>
   <div style="font-family:'Rye',serif;color:var(--accent-bright);font-size:1.4em;margin-top:32px">The SaloonSpace</div>
