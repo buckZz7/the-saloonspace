@@ -26,10 +26,10 @@
   --sidebar-w: 200px;
 }
 [data-theme="light"] {
-  --bg: #ede4d4; --bg-card: #f7f1e8; --bg-elevated: #ffffff; --bg-hover: #e0d5c0;
-  --bg-main: #ffffff;
+  --bg: #d4c4a8; --bg-card: #e8dcc4; --bg-elevated: #f0e8d8; --bg-hover: #c4b498;
+  --bg-main: #f5f0e8;
   --text: #2a1f17; --text-secondary: #5a4535; --text-tertiary: #8a7355;
-  --border: #c4a87a; --border-light: #d4ba8a;
+  --border: #b8a888; --border-light: #c4b498;
   --accent: #b8901a; --accent-bright: #d4a017; --accent-dim: #9a7815;
   --danger: #a93226; --green: #1e8449;
   --shadow-sm: 0 1px 3px rgba(90,69,53,.12);
@@ -334,9 +334,9 @@ body{
 .msg .content strong{font-weight:700}
 .msg .content em{font-style:italic}
 
-.mobile-menu-btn{display:none;background:none;border:1px solid var(--border);color:var(--text);font-size:1.1em;cursor:pointer;padding:6px 12px;border-radius:var(--radius-sm);margin-right:10px;transition:all .2s ease}
-.mobile-menu-btn:hover{border-color:var(--accent);color:var(--accent)}
-.mobile-menu-btn:active{transform:scale(.95)}
+.mobile-menu-btn{display:none;background:none;border:none;color:var(--text);font-size:1.1em;cursor:pointer;padding:6px 10px;border-radius:var(--radius-sm);margin-right:6px;transition:background .15s ease,transform .1s ease}
+.mobile-menu-btn:hover{background:var(--bg-hover);color:var(--text)}
+.mobile-menu-btn:active{transform:scale(.92)}
 .sidebar-backdrop{display:none}
 
 .drawer-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:250}
@@ -478,12 +478,11 @@ body{
 .skeleton-bar{height:40px;margin:8px 0;border-radius:var(--radius-sm);background:linear-gradient(90deg,var(--bg-elevated) 25%,var(--bg-hover) 50%,var(--bg-elevated) 75%);background-size:200% 100%;animation:shimmer 1.5s ease-in-out infinite}
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
-/* Compact empty state */
-.empty-state-content{padding-top:60px;text-align:center;max-width:320px;margin:0 auto;color:var(--text-tertiary)}
-.empty-state-content .empty-icon{margin-bottom:8px}
-.empty-state-content .empty-icon svg{opacity:.5}
-.empty-state-content .empty-title{font-size:.85em;margin-bottom:4px}
-.empty-state-content .empty-sub{font-size:.72em}
+/* Empty state — welcome screen */
+.empty-state-content{padding-top:80px;padding-bottom:40px;text-align:center;max-width:360px;margin:0 auto;color:var(--text-tertiary)}
+.empty-state-content .empty-hero{font-size:3em;margin-bottom:12px;line-height:1}
+.empty-state-content .empty-welcome{font-size:1.2em;font-weight:600;color:var(--text-secondary);margin-bottom:6px}
+.empty-state-content .empty-sub{font-size:.9em;color:var(--text-tertiary)}
 
 /* Disabled message input bar (empty state) */
 .msg-input.disabled{opacity:.6;pointer-events:none}
@@ -496,6 +495,23 @@ body{
 /* View transition fade-in */
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 .onboard,[class*="page"],.app{animation:fadeIn .15s ease}
+
+/* Subtle dot grid pattern on main content area to break up flat emptiness */
+.main{
+  background-image:radial-gradient(circle at center,rgba(212,160,23,.03) 1px,transparent 1px);
+  background-size:24px 24px;
+  background-position:0 0;
+}
+
+/* Landscape / short viewport responsive */
+@media(max-height:500px){
+  .sidebar-header{padding:8px 16px}
+  .channel-sidebar-header{padding:8px 12px}
+  .empty-state-content{padding-top:20px;padding-bottom:10px}
+  .onboard{margin-top:20px}
+  .msg{margin-bottom:8px}
+  .search-box{display:none}
+}
 </style>
 </head>
 <body>
@@ -1488,9 +1504,6 @@ function renderMain(){
           <div class="profile-row" onclick="if(window.innerWidth<768){openDrawer()}else{openSettingsPage()}">
             <span class="avatar" style="background:${avatarBg(state.user.pk)};color:#fff">${(state.user.name||'?')[0].toUpperCase()}</span>
             <span class="pname" style="flex:1;min-width:0">${escapeHtml(state.user.name||'Anon')}</span>
-            <button class="logout-icon" onclick="event.stopPropagation();logout()" title="Logout" aria-label="Logout">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            </button>
           </div>
         </div>
         <div class="sidebar-tabs">
@@ -1651,14 +1664,14 @@ function renderChatArea(){
   }
   return `
     <div style="display:flex;flex-direction:column;height:100%">
-      <div class="chat-header"><div style="display:flex;align-items:center"><button class="mobile-menu-btn" onclick="mobileMenuClick()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><div class="channel-name" style="color:var(--text-tertiary);font-weight:400;font-size:.9em">SaloonSpace</div></div></div>
+      <div class="chat-header"><div style="display:flex;align-items:center"><button class="mobile-menu-btn" onclick="mobileMenuClick()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><div></div></div></div>
       <div style="flex:1;overflow-y:auto;padding:0 24px">
         <div class="empty-state-content">
-          <div class="empty-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-          <div class="empty-title">Howdy, partner 🤠</div>
+          <div class="empty-hero">🤠</div>
+          <div class="empty-welcome">Howdy, partner! 👋</div>
           ${state.groups.length===0
-            ? '<div class="empty-sub">Choose a saloon to get started.</div>'
-            : '<div class="empty-sub">Pick a saloon to start chatting.</div>'}
+            ? '<div class="empty-sub">Enter or create a saloon to start chatting.</div>'
+            : '<div class="empty-sub">Enter or create a saloon to start chatting.</div>'}
         </div>
       </div>
       <div class="msg-input disabled">
@@ -1933,19 +1946,23 @@ function renderProfilePage(){
   const avatarBgStr=avatarBg(state.user.pk);
   return `<div style="display:flex;flex-direction:column;height:100dvh;background:var(--bg-main)">
     <div style="display:flex;align-items:center;gap:12px;padding:max(12px,env(safe-area-inset-top)) 16px 12px;box-shadow:0 1px 0 rgba(0,0,0,.08)">
-      <button onclick="state.view='app';render()" class="fs-back-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
+      <button onclick="goBack()" class="fs-back-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
       <div style="font-weight:600;font-size:1em">Your Profile</div>
     </div>
     <div style="flex:1;overflow-y:auto;padding:24px 20px max(24px,env(safe-area-inset-bottom))">
       <div style="max-width:440px;margin:0 auto">
         <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">
-          <div style="width:64px;height:64px;border-radius:50%;background:${avatarBgStr};display:flex;align-items:center;justify-content:center;font-size:1.5em;font-weight:700;color:#fff;overflow:hidden;border:none">${state.user.picture?`<img src="${escapeHtml(state.user.picture)}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">`:(state.user.name||'?')[0].toUpperCase()}</div>
+          <div style="position:relative;width:64px;height:64px;flex-shrink:0">
+            <div onclick="document.getElementById('profileAvatarInput').click()" style="width:64px;height:64px;border-radius:50%;background:${avatarBgStr};display:flex;align-items:center;justify-content:center;font-size:1.5em;font-weight:700;color:#fff;overflow:hidden;border:none;cursor:pointer;position:relative">${state.user.picture?`<img src="${escapeHtml(state.user.picture)}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">`:(state.user.name||'?')[0].toUpperCase()}</div>
+            <div style="position:absolute;bottom:0;right:0;width:20px;height:20px;background:var(--accent);border:2px solid var(--bg-main);border-radius:50%;display:flex;align-items:center;justify-content:center;pointer-events:none"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+            <input type="file" id="profileAvatarInput" accept="image/*" style="display:none" onchange="handleAvatarUpload(this.files[0],'profPic')">
+          </div>
           <div>
             <div style="font-weight:700;font-size:1.2em">${escapeHtml(state.user.name||'Anon')}</div>
-            <div style="font-size:.8em;color:var(--text-tertiary);font-family:monospace;cursor:pointer" onclick="copyNpub()" title="Click to copy">${state.user.npub?.slice(0,20)||''}…</div>
+            <div style="font-size:.8em;color:var(--text-tertiary);font-family:monospace;cursor:pointer;display:flex;align-items:center;gap:4px" onclick="copyNpub()" title="Click to copy"><span>${state.user.npub?.slice(0,20)||''}…</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></div>
           </div>
         </div>
-        <div class="field" style="margin-bottom:16px"><label>Avatar</label><div style="display:flex;gap:8px;align-items:center"><input type="text" id="profPic" value="${escapeHtml(state.user.picture||'')}" placeholder="Paste URL or upload" style="flex:1;background:var(--bg-hover);border:1px solid transparent;color:var(--text);padding:12px 16px;border-radius:20px;font-size:16px;font-family:inherit"><input type="file" accept="image/*" style="display:none" onchange="handleAvatarUpload(this.files[0],'profPic')"><button type="button" onclick="this.previousElementSibling.click()" style="background:var(--bg-hover);border:none;color:var(--text-secondary);padding:10px 14px;border-radius:var(--radius-md);cursor:pointer;font-size:.8em;white-space:nowrap">Upload</button></div></div>
+        <div class="field" style="margin-bottom:16px"><label>Avatar</label><a onclick="var el=document.getElementById('profPicRow');el.style.display=el.style.display==='none'?'flex':'none'" style="font-size:.8em;color:var(--accent);cursor:pointer;text-decoration:underline">Use URL instead</a><div id="profPicRow" style="display:none;gap:8px;align-items:center;margin-top:8px"><input type="text" id="profPic" value="${escapeHtml(state.user.picture||'')}" placeholder="Paste image URL" style="flex:1;background:var(--bg-hover);border:1px solid transparent;color:var(--text);padding:12px 16px;border-radius:20px;font-size:16px;font-family:inherit"></div></div>
         <div class="field" style="margin-bottom:16px"><label>Display name</label><input type="text" id="profName" value="${escapeHtml(state.user.name||'')}" placeholder="Your name" style="width:100%;background:var(--bg-hover);border:1px solid transparent;color:var(--text);padding:12px 16px;border-radius:20px;font-size:16px;font-family:inherit"></div>
         <div class="field" style="margin-bottom:16px"><label>About</label><textarea id="profAbout" placeholder="Something about yourself..." style="width:100%;background:var(--bg-hover);border:1px solid transparent;color:var(--text);padding:12px 16px;border-radius:20px;font-size:16px;font-family:inherit;min-height:80px;resize:vertical">${escapeHtml(state.user.about||'')}</textarea></div>
         <div class="field" style="margin-bottom:16px"><label>Link</label><input type="text" id="profLink" value="${escapeHtml(state.user.link||'')}" placeholder="https://yoursite.com" style="width:100%;background:var(--bg-hover);border:1px solid transparent;color:var(--text);padding:12px 16px;border-radius:20px;font-size:16px;font-family:inherit"></div>
@@ -1983,7 +2000,7 @@ function renderSaloonSettingsPage(){
   const channels=state.channels[g.id]||[];
   return `<div style="display:flex;flex-direction:column;height:100dvh;background:var(--bg-main)">
     <div style="display:flex;align-items:center;gap:12px;padding:max(12px,env(safe-area-inset-top)) 16px 12px;box-shadow:0 1px 0 rgba(0,0,0,.08)">
-      <button onclick="state.view='app';render()" class="fs-back-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
+      <button onclick="goBack()" class="fs-back-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
       <div style="font-weight:600;font-size:1em">Saloon Settings</div>
     </div>
     <div style="flex:1;overflow-y:auto;padding:24px 20px max(24px,env(safe-area-inset-bottom))">
@@ -1991,7 +2008,19 @@ function renderSaloonSettingsPage(){
         <div class="field" style="margin-bottom:16px"><label>Saloon name</label><input type="text" id="settingsGroupName" value="${escapeHtml(g.name)}" style="width:100%;background:var(--bg-hover);border:1px solid transparent;color:var(--text);padding:12px 16px;border-radius:20px;font-size:16px;font-family:inherit"></div>
         <div class="field" style="margin-bottom:16px"><label>Description</label><textarea id="settingsGroupAbout" placeholder="About this saloon" style="width:100%;background:var(--bg-hover);border:1px solid transparent;color:var(--text);padding:12px 16px;border-radius:20px;font-size:16px;font-family:inherit;min-height:80px;resize:vertical">${escapeHtml(g.about||'')}</textarea></div>
         <div class="field" style="margin-bottom:16px"><label>Invite link</label><div style="display:flex;gap:8px;align-items:center"><input type="text" readonly value="https://buckzz7.github.io/saloonspace/#join=${g.id}" style="flex:1;font-size:.75em;font-family:monospace;opacity:.7;background:var(--bg-hover);border:1px solid transparent;padding:10px 12px;border-radius:20px" onclick="this.select()"><button onclick="navigator.clipboard.writeText('https://buckzz7.github.io/saloonspace/#join=${g.id}');showToast('Invite link copied')" style="background:var(--bg-hover);border:none;color:var(--text-secondary);padding:10px 14px;border-radius:var(--radius-md);cursor:pointer;font-size:.8em;white-space:nowrap">Copy</button></div></div>
-        <div class="field" style="margin-bottom:24px"><label>Tables (${channels.length})</label>${channels.map(c=>`<div class="channel-list-item"><span># ${escapeHtml(c.name)}</span><button onclick="removeChannel('${g.id}','${c.id}')" style="color:var(--danger);background:none;border:none;cursor:pointer;font-size:.85em">Remove</button></div>`).join('')||'<div style="color:var(--text-tertiary);font-size:.85em">No tables</div>'}</div>
+        <div class="field" style="margin-bottom:24px"><label>Tables (${channels.length})</label>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            ${channels.map((c,i)=>`<div class="channel-list-item" style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--bg-hover);border-radius:var(--radius-md)">
+              <span style="display:flex;gap:4px;flex-shrink:0">
+                <button onclick="moveChannel('${g.id}','${c.id}',-1)" ${i===0?'disabled':''} style="background:none;border:none;color:var(--text-tertiary);cursor:pointer;padding:2px;font-size:.8em;${i===0?'opacity:.3':''}" title="Move up">▲</button>
+                <button onclick="moveChannel('${g.id}','${c.id}',1)" ${i===channels.length-1?'disabled':''} style="background:none;border:none;color:var(--text-tertiary);cursor:pointer;padding:2px;font-size:.8em;${i===channels.length-1?'opacity:.3':''}" title="Move down">▼</button>
+              </span>
+              <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"># ${escapeHtml(c.name)}</span>
+              <button onclick="renameChannel('${g.id}','${c.id}')" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;padding:4px 8px;font-size:.8em;border-radius:4px" title="Rename">Rename</button>
+              <button onclick="removeChannel('${g.id}','${c.id}')" style="color:var(--danger);background:none;border:none;cursor:pointer;padding:4px 8px;font-size:.8em;border-radius:4px" title="Remove">Remove</button>
+            </div>`).join('')||'<div style="color:var(--text-tertiary);font-size:.85em;padding:8px 0">No tables yet</div>'}
+          </div>
+        </div>
         <button onclick="submitSettings('${g.id}');state.view='app';render()" style="width:100%;padding:14px;background:var(--accent);color:#000;border:none;border-radius:20px;font-weight:600;font-size:1em;cursor:pointer;font-family:inherit;margin-bottom:12px">Save</button>
         <button onclick="confirmLeaveSaloon('${g.id}','${g.pubkey===state.user.pk?'delete':'leave'}')" style="width:100%;padding:12px;color:var(--danger);background:none;border:1px solid var(--danger);border-radius:20px;cursor:pointer;font-size:.88em;font-family:inherit;transition:all .15s ease">${g.pubkey===state.user.pk?'Delete saloon':'Leave saloon'}</button>
       </div>
@@ -2091,7 +2120,7 @@ function renderRelaysPage(){
   }).join('');
   return `<div class="relays-page">
     <div class="relays-header">
-      <button class="relays-back-btn" onclick="closeRelaysPage()">${backIcon}</button>
+      <button class="relays-back-btn" onclick="goBack()">${backIcon}</button>
       <h1>Relays</h1>
     </div>
     <div class="relays-content">
@@ -2168,6 +2197,7 @@ function removeRelay(url){
 }
 window.openRelaysPage=openRelaysPage;
 window.closeRelaysPage=closeRelaysPage;
+window.goBack=goBack;
 window.addRelay=addRelay;
 window.addRelayFromInput=addRelayFromInput;
 window.removeRelay=removeRelay;
@@ -2255,6 +2285,7 @@ function showToast(msg){
 function copyNsec(){navigator.clipboard.writeText(state.user.nsec||'');showToast('Secret key copied')}
 function copyNpub(){navigator.clipboard.writeText(state.user.npub||'');showToast('Public key copied')}
 function toggleSidebar(){state.sidebarOpen=!state.sidebarOpen;render()}
+function goBack(){state.view='app';render()}
 function toggleChannelSidebar(){state.channelSidebarOpen=!state.channelSidebarOpen;render()}
 function closeAllSidebars(){state.sidebarOpen=false;state.channelSidebarOpen=false;render()}
 function backToSaloons(){state.channelSidebarOpen=false;state.sidebarOpen=true;render()}
@@ -2453,6 +2484,27 @@ async function submitCreateChannel(){
 function removeChannel(groupId,channelId){
   if(!confirm('Remove this table?'))return;
   if(state.channels[groupId])state.channels[groupId]=state.channels[groupId].filter(c=>c.id!==channelId);
+  render();
+}
+function renameChannel(groupId,channelId){
+  const ch=(state.channels[groupId]||[]).find(c=>c.id===channelId);
+  if(!ch)return;
+  const name=prompt('Rename table:',ch.name);
+  if(!name||name===ch.name)return;
+  ch.name=name;
+  render();
+  showToast('Table renamed');
+}
+function moveChannel(groupId,channelId,direction){
+  const channels=state.channels[groupId];
+  if(!channels)return;
+  const idx=channels.findIndex(c=>c.id===channelId);
+  if(idx<0)return;
+  const newIdx=idx+direction;
+  if(newIdx<0||newIdx>=channels.length)return;
+  const temp=channels[idx];
+  channels[idx]=channels[newIdx];
+  channels[newIdx]=temp;
   render();
 }
 
@@ -2847,7 +2899,7 @@ async function init(){
   window.addEventListener('popstate',()=>{
     if(state.showProfile||state.viewingProfile||state.showCreateGroupModal||state.showCreateChannelModal||state.showNewDMModal||state.showSettingsModal){
       state.showCreateGroupModal=false;state.showCreateChannelModal=false;state.showNewDMModal=false;state.showMembersPanel=false;state.replyingTo=null;state.replyingToContent=null;
-      if(state.view==='settings'||state.view==='profile'||state.view==='saloonSettings'||state.view==='relays')state.view='app';
+      if(state.view==='settings'||state.view==='profile'||state.view==='saloonSettings'||state.view==='relays')goBack();
       render();
       history.pushState(null,'',location.href);
     } else if(state.sidebarOpen){
@@ -2919,7 +2971,7 @@ window.showCreateGroupModal=showCreateGroupModal;window.closeCreateGroupModal=cl
 window.setGroupModalMode=setGroupModalMode;window.submitCreateGroup=submitCreateGroup;
 window.submitJoinGroup=submitJoinGroup;
 window.showCreateChannelModal=showCreateChannelModal;window.closeCreateChannelModal=closeCreateChannelModal;
-window.submitCreateChannel=submitCreateChannel;window.removeChannel=removeChannel;
+window.submitCreateChannel=submitCreateChannel;window.removeChannel=removeChannel;window.renameChannel=renameChannel;window.moveChannel=moveChannel;
 window.showNewDMModal=showNewDMModal;window.closeNewDMModal=closeNewDMModal;
 window.submitNewDM=submitNewDM;
 window.openSettings=openSettings;window.closeSettingsModal=closeSettingsModal;window.leaveSaloon=leaveSaloon;window.confirmLeaveSaloon=confirmLeaveSaloon;
