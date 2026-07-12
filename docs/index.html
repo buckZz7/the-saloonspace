@@ -197,19 +197,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 </head>
 <body>
 <div id="app"></div>
+<script src="nostr-bundle.js"></script>
 <script>
-// Load bundled nostr-tools from same origin — no CDN roundtrips.
-import('./nostr-bundle.js').then(m => {
-  window.__NT = m;
-  startApp();
-}).catch(e => {
-  // Fallback to CDN if local bundle fails
-  import('https://cdn.jsdelivr.net/npm/nostr-tools@1.17.0/+esm').then(m => {
-    window.__NT = m;
-    startApp();
-  }).catch(e2 => { document.getElementById('app').innerHTML = '<div style="color:#c0392b;padding:40px;text-align:center">Failed to load: ' + e2.message + '</div>'; });
-});
-
+// Bundle loaded synchronously via script tag — no module overhead.
+window.__NT = window.NostrTools || {};
 function startApp() {
 const { generatePrivateKey, getPublicKey, finishEvent, SimplePool, nip19 } = window.__NT;
 const { npubEncode, nsecEncode } = nip19;
@@ -1134,8 +1125,12 @@ async function fetchMessageProfiles(){
 
 // --- Init ---
 async function init(){
-  if(loadUser()){await loadGroups()}
-  render();
+  if(loadUser()){
+    render(); // show app instantly, empty groups
+    loadGroups(); // fetch in background, will re-render when done
+  } else {
+    render();
+  }
 }
 
 window.toggleTheme=toggleTheme;window.selectGroup=selectGroup;window.selectChannel=selectChannel;
@@ -1170,6 +1165,7 @@ window.__doLogin = loginExisting;
 
 init();
 } // end startApp
+startApp();
 </script>
 </body>
 </html>
