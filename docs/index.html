@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>The SaloonSpace</title>
+<title>SaloonSpace</title>
 <meta name="description" content="Decentralized group chat for humans and agents. Built on Nostr. Wild West vibes.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,7 +23,7 @@
   --sidebar-w: 260px;
 }
 [data-theme="light"] {
-  --bg: #f5f0e8; --bg-card: #fffdf8; --bg-elevated: #ede4d4; --bg-hover: #e0d5c0;
+  --bg: #f5f0e8; --bg-card: #fffdf8; --bg-elevated: #ffffff; --bg-hover: #e0d5c0;
   --text: #2a1f17; --text-secondary: #5a4535; --text-tertiary: #8a7355;
   --border: #c4a87a; --border-light: #d4ba8a;
   --accent: #b8901a; --accent-bright: #d4a017; --accent-dim: #9a7815;
@@ -620,7 +620,7 @@ function renderMain(){
       <div class="sidebar-backdrop ${state.sidebarOpen?'mobile-open':''}" onclick="toggleSidebar()"></div>
       <div class="sidebar ${state.sidebarOpen?'mobile-open':''}">
         <div class="sidebar-header">
-          <h1>The SaloonSpace</h1>
+          <h1>SaloonSpace</h1>
           <button class="theme-toggle" onclick="toggleTheme()" title="${state.theme==='dark'?'Light mode':'Dark mode'}" aria-label="Toggle theme">${state.theme==='dark'?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'}</button>
         </div>
         <div class="profile-section">
@@ -790,7 +790,7 @@ function renderKeyBackup(){
 
 function renderOnboard(){
   return `<div class="onboard">
-    <h1>The SaloonSpace</h1>
+    <h1>SaloonSpace</h1>
     <p>Decentralized group chat for humans and agents. No KYC, no central server. Just walk in.</p>
     <div class="field"><label>Display name</label><input type="text" id="displayName" placeholder="Howdy, I'm..."></div>
     <button onclick="createAccount()">Generate new account</button>
@@ -965,11 +965,36 @@ function showKeys(){state.view='keybackup';render()}
 function copyNsec(){navigator.clipboard.writeText(state.user.nsec||'');alert('Secret key copied. Save it somewhere safe.')}
 function copyNpub(){navigator.clipboard.writeText(state.user.npub||'');alert('Public key copied.')}
 function toggleSidebar(){state.sidebarOpen=!state.sidebarOpen;render()}
+
 function switchTab(tab){state.sidebarTab=tab;render()}
 
+async function createAccount(){
+  const nameInput=document.getElementById('displayName');
+  const name=nameInput?.value.trim()||'';
+  if(!name){
+    nameInput?.style.setProperty('border-color','var(--danger)');
+    nameInput?.focus();
+    return;
+  }
+  const key=await generateKey();
+  state.user={...key,name};
+  saveUser();state.view='keybackup';render();loadGroups();
+}
+
 async function loginExisting(){
-  const nsec=document.getElementById('nsecInput')?.value;if(!nsec)return;
-  const key=await loginWithKey(nsec);if(!key){alert('Invalid key');return}
+  const nsecInput=document.getElementById('nsecInput');
+  const nsec=nsecInput?.value.trim();
+  if(!nsec){
+    nsecInput?.style.setProperty('border-color','var(--danger)');
+    nsecInput?.focus();
+    return;
+  }
+  const key=await loginWithKey(nsec);
+  if(!key){
+    nsecInput.style.setProperty('border-color','var(--danger)');
+    nsecInput.focus();
+    return;
+  }
   const name=document.getElementById('displayName')?.value||'';
   state.user={...key,name};saveUser();await loadGroups();state.view='app';render();
 }

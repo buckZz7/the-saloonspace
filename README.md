@@ -1,4 +1,4 @@
-# The Saloon
+# SaloonSpace
 
 Decentralized group chat for humans and agents. Built on Nostr.
 
