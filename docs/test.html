@@ -1,28 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-<body style="background:#151210;color:#f0e0c8;font-family:sans-serif;padding:40px;font-size:14px">
+<body style="background:#151210;color:#f0e0c8;font-family:sans-serif;padding:40px;font-size:14px;white-space:pre-wrap">
 <div id="out">Loading...</div>
 <script>
 var out = document.getElementById('out');
-var msg = 'Loading...';
-
-// Try dynamic import of the module
-import('./assets/index-C_yBDkZc.js')
-  .then(function() { 
-    msg = 'SUCCESS: Module loaded';
-    out.textContent = msg;
-  })
-  .catch(function(e) { 
-    msg = 'ERROR: ' + e.message + '\n\nStack: ' + (e.stack || 'none').substring(0, 500);
-    out.textContent = msg;
+import('./assets/index-BN_OoRqa.js')
+  .then(function() { out.textContent = 'SUCCESS: Module loaded'; })
+  .catch(function(e) {
+    out.textContent = 'ERROR: ' + e.message + '\n\nStack:\n' + (e.stack || 'none').substring(0, 800);
   });
-
-// Also show after 3 seconds in case it hangs
 setTimeout(function() {
-  if (out.textContent === 'Loading...') {
-    out.textContent = 'TIMEOUT: Module did not resolve or reject after 3s';
-  }
+  if (out.textContent === 'Loading...') out.textContent = 'TIMEOUT: 3s no resolve';
 }, 3000);
 </script>
 </body>
