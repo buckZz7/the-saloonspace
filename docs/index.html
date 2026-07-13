@@ -20,17 +20,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rye&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<!-- nostr-bundle.js: nostr-tools v1.17.0 IIFE — exports SimplePool, finishEvent, generatePrivateKey, getPublicKey, nip19 -->
-<script src="nostr-bundle.js"></script>
-<script>
-// Ensure NostrTools is available before module loads
-window.__NT = window.NostrTools;
-</script>
-<!-- NIP-17 DMs use NIP-44 encryption which needs @noble/curves for ECDH.
-     Loaded async via module script — won't break the app if it fails. -->
-  <script type="module" crossorigin src="./assets/index-BgIHA2jo.js"></script>
+<!-- nostr-bundle.js loaded dynamically by the app to avoid mobile script ordering issues -->
+  <script type="module" crossorigin src="./assets/index-D8pLvqy9.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/rolldown-runtime-D3qAFmwF.js">
-  <link rel="modulepreload" crossorigin href="./assets/nostr-CeI1DpaV.js">
+  <link rel="modulepreload" crossorigin href="./assets/nostr-erND_964.js">
   <link rel="modulepreload" crossorigin href="./assets/utils-BQA0BBR_.js">
   <link rel="stylesheet" crossorigin href="./assets/index-D-SsLuSc.css">
 </head>
