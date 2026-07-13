@@ -13,8 +13,7 @@
 <script>
 // Set theme-color immediately based on stored preference, before CSS loads
 (function(){
-  var t=localStorage.getItem('saloon-theme');
-  if(!t)t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';
+  var t=localStorage.getItem('saloon-theme')||'dark';
   var meta=document.getElementById('theme-color-meta');
   if(meta)meta.content=t==='dark'?'#151210':'#b8a784';
   document.documentElement.setAttribute('data-theme',t);
@@ -24,11 +23,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rye&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <!-- nostr-bundle.js loaded dynamically by the app to avoid mobile script ordering issues -->
-  <script type="module" crossorigin src="./assets/index-B46BGfU9.js"></script>
+  <script type="module" crossorigin src="./assets/index-C1AlAX26.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/rolldown-runtime-DK3Fl9T5.js">
   <link rel="modulepreload" crossorigin href="./assets/nostr-BCffuSyC.js">
   <link rel="modulepreload" crossorigin href="./assets/utils-BZ6Yg60n.js">
-  <link rel="stylesheet" crossorigin href="./assets/index-BAWtgJNF.css">
+  <link rel="stylesheet" crossorigin href="./assets/index-D7WxWPVh.css">
 </head>
 <body>
 <div id="app"></div>
