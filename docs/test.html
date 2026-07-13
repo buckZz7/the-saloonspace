@@ -4,10 +4,38 @@
 <body style="background:#151210;color:#f0e0c8;font-family:sans-serif;padding:40px">
 <div id="out">Loading...</div>
 <script>
-document.getElementById('out').textContent = 'JS works! ' + navigator.userAgent;
-</script>
-<script type="module">
-document.getElementById('out').textContent += ' | Module works too!';
+var out = document.getElementById('out');
+var log = function(msg) { out.textContent += '\n' + msg; };
+
+log('JS works');
+log('UA: ' + navigator.userAgent.slice(0, 80));
+
+// Test 1: Can we load the module?
+log('Test 1: Loading main module...');
+
+fetch('./assets/index-C_yBDkZc.js')
+  .then(function(r) { log('fetch status: ' + r.status); return r.text(); })
+  .then(function(t) { log('fetch size: ' + t.length); })
+  .catch(function(e) { log('fetch error: ' + e.message); });
+
+// Test 2: Try importing as module
+log('Test 2: Importing as module...');
+import('./assets/index-C_yBDkZc.js')
+  .then(function() { log('Module imported OK!'); })
+  .catch(function(e) { log('Module import error: ' + e.message); });
+
+// Test 3: Check the CSS
+log('Test 3: Loading CSS...');
+fetch('./assets/index-D-SsLuSc.css')
+  .then(function(r) { log('CSS fetch status: ' + r.status); })
+  .catch(function(e) { log('CSS fetch error: ' + e.message); });
+
+// Test 4: Check nostr-bundle
+log('Test 4: Loading nostr-bundle...');
+fetch('./nostr-bundle.js')
+  .then(function(r) { log('nostr fetch status: ' + r.status); })
+  .catch(function(e) { log('nostr fetch error: ' + e.message); });
+
 </script>
 </body>
 </html>
