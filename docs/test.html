@@ -1,41 +1,29 @@
 <!DOCTYPE html>
 <html>
 <head><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-<body style="background:#151210;color:#f0e0c8;font-family:sans-serif;padding:40px">
+<body style="background:#151210;color:#f0e0c8;font-family:sans-serif;padding:40px;font-size:14px">
 <div id="out">Loading...</div>
 <script>
 var out = document.getElementById('out');
-var log = function(msg) { out.textContent += '\n' + msg; };
+var msg = 'Loading...';
 
-log('JS works');
-log('UA: ' + navigator.userAgent.slice(0, 80));
-
-// Test 1: Can we load the module?
-log('Test 1: Loading main module...');
-
-fetch('./assets/index-C_yBDkZc.js')
-  .then(function(r) { log('fetch status: ' + r.status); return r.text(); })
-  .then(function(t) { log('fetch size: ' + t.length); })
-  .catch(function(e) { log('fetch error: ' + e.message); });
-
-// Test 2: Try importing as module
-log('Test 2: Importing as module...');
+// Try dynamic import of the module
 import('./assets/index-C_yBDkZc.js')
-  .then(function() { log('Module imported OK!'); })
-  .catch(function(e) { log('Module import error: ' + e.message); });
+  .then(function() { 
+    msg = 'SUCCESS: Module loaded';
+    out.textContent = msg;
+  })
+  .catch(function(e) { 
+    msg = 'ERROR: ' + e.message + '\n\nStack: ' + (e.stack || 'none').substring(0, 500);
+    out.textContent = msg;
+  });
 
-// Test 3: Check the CSS
-log('Test 3: Loading CSS...');
-fetch('./assets/index-D-SsLuSc.css')
-  .then(function(r) { log('CSS fetch status: ' + r.status); })
-  .catch(function(e) { log('CSS fetch error: ' + e.message); });
-
-// Test 4: Check nostr-bundle
-log('Test 4: Loading nostr-bundle...');
-fetch('./nostr-bundle.js')
-  .then(function(r) { log('nostr fetch status: ' + r.status); })
-  .catch(function(e) { log('nostr fetch error: ' + e.message); });
-
+// Also show after 3 seconds in case it hangs
+setTimeout(function() {
+  if (out.textContent === 'Loading...') {
+    out.textContent = 'TIMEOUT: Module did not resolve or reject after 3s';
+  }
+}, 3000);
 </script>
 </body>
 </html>
